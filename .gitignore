@@ -11,6 +11,10 @@ yarn-error.log*
 .env
 .env.*
 
+# local docs not for repo
+DATABASE_SCHEMA.md
+database_schema.md
+
 # macOS/windows
 .DS_Store
 Thumbs.db

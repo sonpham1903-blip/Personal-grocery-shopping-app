@@ -1,5 +1,4 @@
 import Category from "../models/Category.js";
-import mongoose from "mongoose";
 
 export const create = async (req, res, next) => {
   try {
@@ -33,11 +32,8 @@ export const get = async (req, res, next) => {
 
 export const getById = async (req, res, next) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json("ID không hợp lệ");
-    }
     const cat = await Category.findById(req.params.id);
-    if (!cat) return res.status(404).json("Không tìm được danh mục chỉ định");
+    if (!cat) return res.status(403).json("Không tìm được danh mục chỉ định");
     res.status(200).json(cat);
   } catch (error) {
     next(error);
@@ -46,15 +42,12 @@ export const getById = async (req, res, next) => {
 
 export const updateById = async (req, res, next) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json("ID không hợp lệ");
-    }
     const cat = await Category.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
-    if (!cat) return res.status(404).json("Không tìm được danh mục chỉ định");
+    if (!cat) return res.status(403).json("Không tìm được danh mục chỉ định");
     res.status(200).json("Cập nhật danh mục thành công");
   } catch (error) {
     next(error);
@@ -63,11 +56,8 @@ export const updateById = async (req, res, next) => {
 
 export const deleteById = async (req, res, next) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json("ID không hợp lệ");
-    }
     const cat = await Category.findByIdAndDelete(req.params.id);
-    if (!cat) return res.status(404).json("Không tìm được danh mục chỉ định");
+    if (!cat) return res.status(403).json("Không tìm được danh mục chỉ định");
     res.status(200).json("Xóa danh mục thành công");
   } catch (error) {
     next(error);

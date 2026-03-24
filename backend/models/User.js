@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "shop", "admin", "special", "staff"],
+      enum: ["user", "shop", "admin"],
       default: "user",
     },
     // -1: xoa, 0: khoa, 1: hoat dong, 2: chua kich hoat
@@ -102,8 +102,6 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-UserSchema.index({ username: 1 }, { unique: true });
-UserSchema.index({ email: 1 }, { unique: true, sparse: true });
 UserSchema.index({ phone: 1 });
 
 export default mongoose.model("User", UserSchema);

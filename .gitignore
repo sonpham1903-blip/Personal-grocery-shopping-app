@@ -18,3 +18,7 @@ database_schema.md
 # macOS/windows
 .DS_Store
 Thumbs.db
+
+#postman
+.postman/
+**.postman/

@@ -15,7 +15,7 @@ const ProductSchema = new mongoose.Schema(
     },
     shopName: {
       type: String,
-      default: "Sale168.vn",
+      default: "Shop",
     },
     thumbnail: {
       type: String,

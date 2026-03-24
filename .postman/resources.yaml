@@ -1,6 +1,9 @@
 # Use this workspace to collaborate
 workspace:
   id: 156fb0a0-167b-4953-8bbd-22703921346e
+cloudResources:
+  collections:
+    ..\postman\collections\dichoho_api: 6cebb3e3-e82e-4d04-9bce-ca70c35fbdb0
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:

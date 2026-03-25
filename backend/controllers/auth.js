@@ -31,7 +31,7 @@ export const signin = async (req, res, next) => {
         .json(
           "Tài khoản đã bị khóa do vi phạm chính sách cộng đồng, hãy liên hệ CSKH để được hỗ trợ"
         );
-    if (user.role === "user")
+    if (["user"].includes(user.role))
       return res.status(403).json("Bạn chưa được cấp phép truy cập trang này");
     const checkPass = await bcrypt.compare(req.body.password, user.password);
     if (!checkPass)
@@ -48,7 +48,7 @@ export const signin = async (req, res, next) => {
   }
 };
 
-// shop, người mua
+// People/User - người mua
 export const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });

@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import categoryRoute from "./routes/category.js";
 import authRoute from "./routes/auth.js";
 import productRoute from "./routes/product.js";
-
+import orderRoute from "./routes/order.js";
 
 dotenv.config();
 
@@ -21,6 +21,7 @@ app.use(express.json());
 app.use("/categories", categoryRoute);
 app.use("/auth", authRoute);
 app.use("/products", productRoute);
+app.use("/orders", orderRoute);
 
 async function startServer() {
   try {

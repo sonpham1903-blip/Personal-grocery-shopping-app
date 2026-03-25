@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "shop", "admin"],
+      enum: ["user", "shop", "shipper", "admin"],
       default: "user",
     },
     // -1: xoa, 0: khoa, 1: hoat dong, 2: chua kich hoat

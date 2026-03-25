@@ -111,6 +111,10 @@ const OrderSchema = new mongoose.Schema(
       default: 0,
       enum: [0, 1, 2, 3, 4],
     },
+    shipperId: {
+      type: String,
+      default: null,
+    },
     tracking: {
       type: [OrderTrackingSchema],
       default: [],

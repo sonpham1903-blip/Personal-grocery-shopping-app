@@ -1,7 +1,7 @@
 import Product from '../models/Product.js';
 import { createError } from '../error.js';
 
-const permission = ["admin"];
+const permission = ["admin", "shop"];
 
 export const createProduct = async (req, res, next) => {
   try {

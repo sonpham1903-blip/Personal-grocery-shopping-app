@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import categoryRoute from "./routes/category.js";
 import authRoute from "./routes/auth.js";
+import productRoute from "./routes/product.js";
+
 
 dotenv.config();
 
@@ -18,6 +20,7 @@ app.use(express.json());
 // Routes
 app.use("/categories", categoryRoute);
 app.use("/auth", authRoute);
+app.use("/products", productRoute);
 
 async function startServer() {
   try {

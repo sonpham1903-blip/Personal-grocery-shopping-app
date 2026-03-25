@@ -8,7 +8,10 @@ export const verifyToken = (req, res, next) => {
   }
 
   try {
-    const secret = "your-secret-key"; // TODO: Thay bằng secret key thực tế từ .env
+    const secret = process.env.JWT_KEY;
+    if (!secret) {
+      return res.status(500).json("Thiếu cấu hình JWT_KEY");
+    }
     const decoded = jwt.verify(token, secret);
     req.user = decoded;
     next();

@@ -16,8 +16,8 @@ export const signup = async (req, res, next) => {
     const newUser = new User({ ...req.body, password: hash });
     await newUser.save();
     res.status(200).json("Đăng ký tài khoản thành công");
-  } catch (error) {
-    next(error);
+  } catch (createError) {
+    next(createError(403, "Đăng ký tài khoản thất bại"));
   }
 };
 // admin
@@ -44,7 +44,7 @@ export const signin = async (req, res, next) => {
     const { password, ...other } = user._doc;
     res.status(200).json({ ...other, token });
   } catch (error) {
-    next(error);
+    next(createError(403, "Đăng nhập thất bại"));
   }
 };
 
@@ -72,6 +72,6 @@ export const login = async (req, res, next) => {
     const { password, ...other } = user._doc;
     res.status(200).json({ ...other, token });
   } catch (error) {
-    next(error);
+    next(createError(403, "Đăng nhập thất bại"));
   }
 };

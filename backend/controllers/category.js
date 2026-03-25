@@ -1,4 +1,5 @@
 import Category from "../models/Category.js";
+import {createError} from "../error.js";
 
 export const create = async (req, res, next) => {
   try {
@@ -6,7 +7,7 @@ export const create = async (req, res, next) => {
     await newCat.save();
     res.status(200).json("tạo mới danh mục thành công");
   } catch (error) {
-    next(error);
+    next(createError(403, "Tạo mới danh mục thất bại"));
   }
 };
 
@@ -16,7 +17,7 @@ export const getAll = async (req, res, next) => {
     if (!cats) return res.status(403).json("Không có dữ liệu danh mục");
     res.status(200).json(cats);
   } catch (error) {
-    next(error);
+    next(createError(403, "Không có dữ liệu danh mục"));
   }
 };
 
@@ -26,7 +27,7 @@ export const get = async (req, res, next) => {
     if (!cats) return res.status(403).json("Không có dữ liệu danh mục");
     res.status(200).json(cats);
   } catch (error) {
-    next(error);
+    next(createError(403, "Không có dữ liệu danh mục"));
   }
 };
 
@@ -36,7 +37,7 @@ export const getById = async (req, res, next) => {
     if (!cat) return res.status(403).json("Không tìm được danh mục chỉ định");
     res.status(200).json(cat);
   } catch (error) {
-    next(error);
+    next(createError(403, "Không tìm được danh mục chỉ định"));
   }
 };
 
@@ -50,7 +51,7 @@ export const updateById = async (req, res, next) => {
     if (!cat) return res.status(403).json("Không tìm được danh mục chỉ định");
     res.status(200).json("Cập nhật danh mục thành công");
   } catch (error) {
-    next(error);
+    next(createError(403, "Cập nhật danh mục thất bại"));
   }
 };
 
@@ -60,6 +61,6 @@ export const deleteById = async (req, res, next) => {
     if (!cat) return res.status(403).json("Không tìm được danh mục chỉ định");
     res.status(200).json("Xóa danh mục thành công");
   } catch (error) {
-    next(error);
+    next(createError(403, "Xóa danh mục thất bại"));
   }
 };

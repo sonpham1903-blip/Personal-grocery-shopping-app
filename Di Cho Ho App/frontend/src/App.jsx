@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import Products from './pages/Products';
 import Login from './pages/Login';
+import SignUp from './pages/SignUp';
 import Cart from './pages/Cart';
 import ProductPage from './pages/ProductPage';
 
@@ -50,6 +51,7 @@ function App() {
         <Route path="/products" element={<Products onAddToCart={addToCart} products={productsData} />} />
         <Route path="/product/:id" element={<ProductPage products={productsData} onAddToCart={addToCart} />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/cart" element={<Cart cart={cart} onRemoveFromCart={removeFromCart} />} />
       </Routes>
     </Router>

@@ -8,10 +8,23 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  const mockLogin = (email, password) => {
+    // This is just a mock function. In a real app, you'd call your backend API here.
+    if (email === 'admin@example.com' && password === 'admin123') {
+      return true;
+    }
+    return false;
+  };
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Simple login logic, just alert for now
-    alert(`Logged in with ${email}`);
+    if (mockLogin(email, password)) {
+      alert(`Logged in with ${email}`);
+    } else {
+      alert('Invalid credentials');
+    }
   };
 
   return (

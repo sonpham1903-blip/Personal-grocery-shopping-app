@@ -1,2 +1,194 @@
-@import "tailwindcss";
+/* ===================================================
+   ĐI CHỢ HỘ - Global Design System
+   Font: Plus Jakarta Sans (Google Fonts)
+   =================================================== */
 
+/* --- CSS Custom Properties / Design Tokens --- */
+:root {
+  /* Brand Colors */
+  --color-primary:       #1B4332;   /* deep forest green */
+  --color-primary-light: #2D6A4F;
+  --color-primary-dark:  #0D2B1F;
+  --color-accent:        #F59E0B;   /* amber gold */
+  --color-accent-light:  #FCD34D;
+  --color-accent-dark:   #D97706;
+
+  /* Neutrals */
+  --color-bg:            #F8F9FA;
+  --color-bg-dark:       #0F172A;
+  --color-surface:       #FFFFFF;
+  --color-surface-2:     #F1F5F9;
+  --color-border:        #E2E8F0;
+  --color-border-focus:  #F59E0B;
+
+  /* Text */
+  --color-text-1:        #0F172A;  /* headings */
+  --color-text-2:        #475569;  /* body */
+  --color-text-3:        #94A3B8;  /* muted */
+  --color-text-inverse:  #FFFFFF;
+
+  /* Role-specific accent colors */
+  --color-shop:          #1B4332;  /* green - nguoi ban */
+  --color-user:          #1E3A8A;  /* blue  - khach hang */
+  --color-partner:       #7C2D12;  /* orange-red - shipper */
+
+  /* Semantic */
+  --color-success:       #22C55E;
+  --color-warning:       #F59E0B;
+  --color-error:         #EF4444;
+  --color-info:          #3B82F6;
+
+  /* Shadows */
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:    0 4px 12px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.08);
+  --shadow-lg:    0 10px 30px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08);
+  --shadow-glow:  0 0 20px rgba(245,158,11,.25);
+
+  /* Radius */
+  --radius-sm:    6px;
+  --radius-md:    12px;
+  --radius-lg:    20px;
+  --radius-full:  9999px;
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-base);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-1);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* --- Utility Classes --- */
+.glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gradient-brand {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 50%, var(--color-accent-dark) 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(245,158,11,0.15); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in   { animation: fadeIn      0.4s var(--transition-slow) both; }
+.animate-slide-left  { animation: slideInLeft  0.4s var(--transition-slow) both; }
+.animate-slide-right { animation: slideInRight 0.4s var(--transition-slow) both; }
+.animate-float       { animation: float        3s ease-in-out infinite; }
+
+/* --- Loading Skeleton --- */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface-2) 25%, #e8edf2 50%, var(--color-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* --- Focus Styles --- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- Link Reset --- */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- Button Base --- */
+button {
+  cursor: pointer;
+  font-family: var(--font-base);
+}
+
+/* --- Image --- */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}

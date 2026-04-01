@@ -48,9 +48,6 @@ const UserSchema = new mongoose.Schema(
       default: 2,
       enum: [-1, 0, 1, 2],
     },
-    parentUser: {
-      type: String,
-    },
     address: {
       type: String,
     },

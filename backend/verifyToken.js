@@ -19,3 +19,19 @@ export const verifyToken = (req, res, next) => {
     return res.status(403).json("Token không hợp lệ");
   }
 };
+
+export const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user?.role) {
+      return res.status(401).json("Bạn chưa đăng nhập");
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json("Bạn không được phép thực hiện chức năng này");
+    }
+
+    next();
+  };
+};

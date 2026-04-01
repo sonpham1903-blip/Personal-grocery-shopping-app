@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 import categoryRoute from "./routes/category.js";
 import authRoute from "./routes/auth.js";
 import productRoute from "./routes/product.js";
@@ -15,6 +16,13 @@ const MONGO_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/dichoho_
 
 // Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 
 // Routes

@@ -20,7 +20,7 @@ export const signup = async (req, res, next) => {
     next(createError(403, "Đăng ký tài khoản thất bại"));
   }
 };
-// admin
+// admin, shipper, shop
 export const signin = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
@@ -31,7 +31,7 @@ export const signin = async (req, res, next) => {
         .json(
           "Tài khoản đã bị khóa do vi phạm chính sách cộng đồng, hãy liên hệ CSKH để được hỗ trợ"
         );
-    if (["user"].includes(user.role))
+    if (!["admin", "shipper", "shop"].includes(user.role))
       return res.status(403).json("Bạn chưa được cấp phép truy cập trang này");
     const checkPass = await bcrypt.compare(req.body.password, user.password);
     if (!checkPass)
@@ -41,6 +41,17 @@ export const signin = async (req, res, next) => {
       process.env.JWT_KEY,
       { expiresIn: "4h" }
     );
+    
+    // Admin: chỉ trả về username, role và token
+    if (user.role === "admin") {
+      return res.status(200).json({
+        username: user.username,
+        role: user.role,
+        token
+      });
+    }
+    
+    // Shipper, Shop: trả về thông tin đầy đủ
     const { password, ...other } = user._doc;
     res.status(200).json({ ...other, token });
   } catch (error) {

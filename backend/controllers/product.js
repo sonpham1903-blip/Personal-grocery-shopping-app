@@ -1,8 +1,6 @@
 import Product from '../models/Product.js';
 import { createError } from '../error.js';
 
-const permission = ["admin", "shop"];
-
 export const createProduct = async (req, res, next) => {
   try {
     if (!req.body.stockPrice)
@@ -20,6 +18,32 @@ export const createProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const activeProduct = async(req, res, next) => {
+  try{
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return next(createError(404, "Không tìm thấy thông tin sản phẩm"));
+    }
+    const isAdmin = req.user?.role === "admin";
+    
+    if (isAdmin) {
+      await Product.findByIdAndUpdate(
+        req.params.id,
+        { $set: { active: true } },
+        { new: true }
+      );
+      res.status(200).json("Kích hoạt sản phẩm thành công");
+    } else {
+      return next(
+        createError(403, "Bạn không được phép thực hiện chức năng này")
+      );
+    }
+  }
+  catch (error) {
+    next(error);
+  }
+}
 
 export const getProducts = async (req, res, next) => {
   try {
@@ -78,10 +102,10 @@ export const updateProduct = async (req, res, next) => {
     if (!product) {
       return next(createError(404, "Không tìm thấy thông tin sản phẩm"));
     } else {
-      if (
-        product.shopID === req.user?.id ||
-        permission.includes(req.user?.role)
-      ) {
+      const isAdmin = req.user?.role === "admin";
+      const isShopOwner = req.user?.role === "shop" && product.shopID === req.user?.id;
+
+      if (isAdmin || isShopOwner) {
         await Product.findByIdAndUpdate(
           req.params.id,
           { $set: req.body },
@@ -107,10 +131,10 @@ export const deleteProduct = async (req, res, next) => {
     if (!product) {
       return next(createError(404, "Không tìm thấy thông tin sản phẩm"));
     } else {
-      if (
-        product.shopID === req.user?.id ||
-        permission.includes(req.user?.role)
-      ) {
+      const isAdmin = req.user?.role === "admin";
+      const isShopOwner = req.user?.role === "shop" && product.shopID === req.user?.id;
+
+      if (isAdmin || isShopOwner) {
         await Product.findByIdAndDelete(req.params.id);
         res.status(200).json("Xóa sản phẩm thành công");
       } else {

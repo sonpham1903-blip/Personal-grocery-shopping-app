@@ -14,6 +14,7 @@ yarn-error.log*
 # local docs not for repo
 DATABASE_SCHEMA.md
 database_schema.md
+API_DOCUMENTATION.md
 
 # macOS/windows
 .DS_Store

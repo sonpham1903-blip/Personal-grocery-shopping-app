@@ -6,6 +6,7 @@ import categoryRoute from "./routes/category.js";
 import authRoute from "./routes/auth.js";
 import productRoute from "./routes/product.js";
 import orderRoute from "./routes/order.js";
+import userRoute from "./routes/user.js";
 
 dotenv.config();
 
@@ -30,6 +31,8 @@ app.use("/categories", categoryRoute);
 app.use("/auth", authRoute);
 app.use("/products", productRoute);
 app.use("/orders", orderRoute);
+app.use("/users", userRoute);
+
 
 async function startServer() {
   try {

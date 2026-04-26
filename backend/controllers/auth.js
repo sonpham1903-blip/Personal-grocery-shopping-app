@@ -9,11 +9,24 @@ export const signup = async (req, res, next) => {
     if (user) {
       return res.status(403).json("Tên đăng nhập đã có người sử dụng");
     }
-    if (["admin"].includes(req.body?.role))
+    const requestedRole = req.body?.role;
+    if (![undefined, "user", "shop"].includes(requestedRole)) {
       return res.status(403).json("Tham số truyền lên không hợp lệ");
+    }
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(req.body.password, salt);
-    const newUser = new User({ ...req.body, password: hash });
+    const payload = { ...req.body, password: hash };
+
+    if (requestedRole === "shop") {
+      payload.role = "shop";
+      payload.status = 2;
+    } else {
+      payload.role = "user";
+      // User side should not be able to arbitrarily set status state.
+      delete payload.status;
+    }
+
+    const newUser = new User(payload);
     await newUser.save();
     res.status(200).json("Đăng ký tài khoản thành công");
   } catch (createError) {
@@ -25,6 +38,8 @@ export const signin = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     if (!user) return res.status(404).json("Sai tên đăng nhập hoặc mật khẩu");
+    if (user.status === 2)
+      return res.status(403).json("Tài khoản chưa kích hoạt");
     if (user.status === 0)
       return res
         .status(403)
@@ -64,12 +79,6 @@ export const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     if (!user) return res.status(404).json("Sai tên đăng nhập hoặc mật khẩu");
-    if (user.status === 0)
-      return res
-        .status(403)
-        .json(
-          "Tài khoản đã bị khóa do vi phạm chính sách cộng đồng, hãy liên hệ CSKH để được hỗ trợ"
-        );
     if (user.role !== "user")
       return res.status(403).json("Bạn chưa được cấp phép truy cập trang này");
     const checkPass = await bcrypt.compare(req.body.password, user.password);

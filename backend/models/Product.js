@@ -29,6 +29,15 @@ const ProductSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    star: {
+      type: Number,
+      default: 3,
+      min: 3,
+      max: 5,
+    },
+    excutionDate: {
+      type: Date,
+    },
     currentPrice: {
       type: Number,
       default: 0,
@@ -74,6 +83,14 @@ const ProductSchema = new mongoose.Schema(
     },
     updatedBy: {
       type: String,
+    },
+    ocopCertImage: {
+      type: String,
+      default: "",
+    },
+    relatedDocuments: {
+      type: [String],
+      default: [],
     },
   },
   { timestamps: true }

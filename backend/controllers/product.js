@@ -76,6 +76,27 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
+export const getMyProducts = async (req, res, next) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json("Bạn chưa đăng nhập");
+    }
+
+    const isAdmin = req.user?.role === "admin";
+    const products = isAdmin
+      ? await Product.find()
+      : await Product.find({ shopID: req.user.id });
+
+    const list = products.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.status(200).json(list);
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const getProduct = async (req, res, next) => {
   try {
@@ -143,6 +164,33 @@ export const deleteProduct = async (req, res, next) => {
         );
       }
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLastest = async (req, res, next) => {
+  const limit = req.params.limit || 0;
+  try {
+    const products = await Product.find({ active: true });
+    const list =
+      limit > 0
+        ? products.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
+        : products.sort((a, b) => b.createdAt - a.createdAt);
+    res.status(200).json(list);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getHostest = async (req, res, next) => {
+  const limit = req.params.limit || 0;
+  try {
+    const products = await Product.find({ active: true });
+    const list =
+      limit > 0
+        ? products.sort((a, b) => b.outStock - a.outStock).slice(0, limit)
+        : products.sort((a, b) => b.outStock - a.outStock);
+    res.status(200).json(list);
   } catch (error) {
     next(error);
   }

@@ -78,6 +78,9 @@ const UserSchema = new mongoose.Schema(
     wardFullName: {
       type: String,
     },
+    businessLicensePdfUrl: {
+      type: String,
+    },
     liked: {
       type: [String],
       default: [],

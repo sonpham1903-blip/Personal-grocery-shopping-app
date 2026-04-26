@@ -8,6 +8,14 @@ const OrderProductSchema = new mongoose.Schema(
     productName: {
       type: String,
     },
+    img: {
+      type: String,
+      default: "",
+    },
+    shopName: {
+      type: String,
+      default: "Shop",
+    },
     shopID: {
       type: String,
     },
@@ -17,6 +25,11 @@ const OrderProductSchema = new mongoose.Schema(
       min: 0,
     },
     unitPrice: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    currentPrice: {
       type: Number,
       default: 0,
       min: 0,
@@ -94,9 +107,9 @@ const OrderSchema = new mongoose.Schema(
       min: 0,
     },
     shipMode: {
-      type: Number,
-      default: 0,
-      enum: [0, 1],
+      type: String,
+      default: "ems",
+      enum: ["ems", "vnpost", "best"],
     },
     payment: {
       type: String,

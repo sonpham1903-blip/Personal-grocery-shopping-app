@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/", verifyToken, createOrder);
 router.get("/", verifyToken, getOrders);
+router.get("/my", verifyToken, getMyOrders);
 router.get("/my-orders", verifyToken, getMyOrders);
 router.get("/:id", verifyToken, getOrder);
 router.put("/:id", verifyToken, updateById);

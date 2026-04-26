@@ -1,0 +1,100 @@
+@media (min-width:767px){
+	.center-fix-all {
+		display: block;
+	    height: 40px;
+	    overflow: hidden;
+	    margin-right: 60px;
+	}
+	.front-back-page .center-fix-all #btn-search-mobile {
+	    color: var(--default-color);
+	    font-size: 17px;
+	    width: 26px;
+	    display: inline-block;
+	    height: 40px;
+	    padding: 11px 0px;
+	}
+}
+.small-banner img {
+	max-height: 120px;
+}
+@media (max-width:767px){
+    .banner-inhome{
+        margin-top: 0px;
+    }
+
+}
+@media (max-width:767px){
+	.item-product-inhome .marker{
+		height: initial !important;
+	}
+	/*body figure.mz-figure {
+	    height: initial;
+	}*/
+	.table-shop table a {
+	    color: #aeaeae;
+	    font-size: 13px;
+	    display: inline-block;
+	    margin-top: 15px;
+	}
+	body .shopping-cart-page .cart-droplist .mini-list .list-item-cart {
+	    max-height: unset;
+	    overflow: unset;
+	}
+	body .shopping-cart-page .cart-droplist .mini-list .list-item-cart .item {
+	     overflow: unset; 
+	}
+	body .nice-select .option {
+	    color: #000;
+	}
+	body .title-user-shop {
+	    margin-bottom: 40px;
+	}
+	.tab-notification .item.unread div.account-notify-content p {
+	    font-weight: bold; 
+	}
+}
+
+@media (max-width: 575px) {
+	.fixed .bottom-header {
+		box-shadow: 0 0 8px 0px #333;
+	}
+	.logo img {
+		max-height: 55px;
+		padding: 5px;
+		padding-left: 0;
+	}
+	.login-in-mobile {
+		margin-top: 25px;
+	}
+	.notification-mobile-area {
+		margin-top: 28px;
+	}
+	.box-shopping-cart {
+		margin-top: 18px;
+	}
+	.box-search-inmobile .form-search-inmobile {
+		margin-top: 12px;
+	}
+	.list-skip-link ul li {
+		padding: 5px 5px 5px 5px;
+	}
+	.list-skip-link ul li .ico img {
+		width: 35px;
+	}
+	.list-skip-link ul li .title h2 {
+		margin: 5px 0px 5px;
+	}
+	.cate-menu-inhome .list-cate-menu .item-cate-menu .img, .cate-menu-inhome .list-cate-menu-mobile .item-cate-menu .img {
+		height: 88px;
+	}
+	.cate-menu-inhome .list-cate-menu .item-cate-menu, .cate-menu-inhome .list-cate-menu-mobile .item-cate-menu {
+		height: 130px;
+	}
+	.cate-menu-inhome .list-cate-menu-mobile .item-cate-menu h3 {
+		margin: 0;
+	}
+	.center-fix-all {
+		display: flex;
+		align-items: center;
+	}
+}

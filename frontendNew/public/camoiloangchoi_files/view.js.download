@@ -1,0 +1,363 @@
+$(document).ready(function () {
+  $("#slider1").owlCarousel({
+    loop: true,
+    margin: 10,
+    nav: false,
+    items: 1,
+    dots: false,
+    autoplay: true,
+    autoplayTimeout: 4000,
+    responsive: {
+      0: {
+        dots: true,
+      },
+      1200: {
+        dots: false,
+      },
+    },
+  });
+  $("#slider-mobile").owlCarousel({
+    loop: true,
+    margin: 10,
+    nav: false,
+    autoplay: true,
+    autoplayTimeout: 2000,
+    items: 4,
+    dots: false,
+    responsive: {
+      0: {
+        items: 1,
+      },
+      321: {
+        items: 3,
+      },
+      400: {
+        items: 3,
+      },
+      600: {
+        items: 4,
+      },
+    },
+  });
+  $(".slider_loaisp").owlCarousel({
+    loop: true,
+    // navText: ['<img src="images/home/img/prev.png">', '<img src="images/home/img/next.png">'],
+    margin: 4.5,
+    nav: false,
+    dots: false,
+    responsive: {
+      300: {
+        items: 1.5,
+        dots: true,
+        nav: false,
+      },
+      375: {
+        items: 2,
+        margin: 7,
+        dots: true,
+      },
+      500: {
+        items: 2,
+        dots: true,
+      },
+      600: {
+        items: 3,
+        dots: true,
+      },
+      700: {
+        items: 3.2,
+        dots: true,
+      },
+      800: {
+        items: 3.5,
+        dots: true,
+        nav: true,
+      },
+      900: {
+        items: 4,
+        nav: true,
+      },
+      1000: {
+        items: 3.2,
+        nav: true,
+      },
+      1200: {
+        items: 4,
+        nav: true,
+      },
+    },
+  });
+  $("#list_xuhuong").owlCarousel({
+    loop: true,
+    margin: 10,
+    nav: false,
+    items: 8,
+    dots: false,
+    responsive: {
+      0: {
+        items: 2.5,
+      },
+      420: {
+        items: 2.5,
+      },
+      500: {
+        items: 3.4,
+      },
+      600: {
+        items: 4,
+      },
+      700: {
+        items: 5.2,
+      },
+      800: {
+        items: 6.5,
+      },
+      900: {
+        items: 6,
+      },
+      1000: {
+        items: 7.2,
+      },
+      1200: {
+        items: 8,
+      },
+    },
+  });
+  $("#list_xuhuongs").owlCarousel({
+    loop: true,
+    margin: 10,
+    nav: false,
+    items: 10,
+    rows: 2,
+    dots: false,
+    responsive: {
+      0: {
+        items: 2.5,
+      },
+      420: {
+        items: 2.5,
+      },
+      500: {
+        items: 3.4,
+      },
+      600: {
+        items: 4,
+      },
+      700: {
+        items: 5.2,
+      },
+      800: {
+        items: 6.5,
+      },
+      900: {
+        items: 6,
+      },
+      1000: {
+        items: 7.2,
+      },
+      1200: {
+        items: 8,
+      },
+    },
+  });
+  console.log(1);
+  $("#list_xuhuongss").owlCarousel({
+    loop: true,
+    margin: 10,
+    nav: false,
+    items: 8,
+    dots: false,
+    responsive: {
+      0: {
+        items: 2.5,
+      },
+      420: {
+        items: 2.5,
+      },
+      500: {
+        items: 3.4,
+      },
+      600: {
+        items: 4,
+      },
+      700: {
+        items: 5.2,
+      },
+      800: {
+        items: 6.5,
+      },
+      900: {
+        items: 6,
+      },
+      1000: {
+        items: 7.2,
+      },
+      1200: {
+        items: 8,
+      },
+    },
+  });
+});
+
+/*--------------------------------------------*/
+// Create Countdown
+//$(window).resize(function () {
+$(window).ready(function () {
+  var width = $(window).width();
+  if (width <= 1000) {
+    $("#silder-sale").addClass("owl-carousel owl-theme");
+    $("#silder-sale").removeClass("row");
+    $("#silder-sale").owlCarousel({
+      // autoWidth: true,
+      loop: true,
+      // margin: 10,
+      nav: false,
+      dots: true,
+      responsive: {
+        300: {
+          items: 1.5,
+        },
+        420: {
+          items: 2,
+        },
+        500: {
+          items: 2.4,
+        },
+        600: {
+          items: 3.5,
+        },
+        800: {
+          items: 4,
+        },
+      },
+    });
+  } else {
+    // location.reload();
+  }
+});
+/*--------------lock-----------------*/
+function startTimer(seconds, minutes, hours, key) {
+  if (seconds - 1 == 0 && seconds != 0) {
+    if (minutes - 1 == 0 && minutes != 0) {
+      //console.log(hours);
+      if (hours == 0) {
+        // if(day-1>=0){
+        // 	hours=24;
+        // 	// day--;
+        // }
+        hours = 24;
+      }
+      if (hours != 0) {
+        hours--;
+        minutes = 60;
+      }
+    } else if (minutes - 1 > 0) {
+      minutes--;
+      if (minutes < 10) {
+        minutes = "0" + minutes;
+      }
+      seconds = 59;
+      //console.log(21);
+      // /console.log((seconds-1)==0);
+    }
+  } else if (seconds - 1 > 0) {
+    seconds--;
+    if (seconds < 10) {
+      seconds = "0" + seconds;
+    }
+  }
+  // console.log(seconds+'s-'+minutes+'p-'+hours+'h-'+day);
+  key.attr("seconds", seconds);
+  key.attr("minutes", minutes);
+  key.attr("hours", hours);
+  // key.attr("day",day);
+  key.find(".seconds").html(seconds);
+  key.find(".minutes").html(minutes);
+  key.find(".hours").html(hours);
+  // key.find('.day').html(day);
+}
+setInterval(function () {
+  $(".time_clock").each(function () {
+    var seconds = $(this).attr("seconds");
+    var minutes = $(this).attr("minutes");
+    var hours = $(this).attr("hours");
+    // var day=$(this).attr("day");
+    startTimer(seconds, minutes, hours, $(this));
+  });
+}, 1000);
+/*---------------js click toggle----------------------------*/
+$(document).ready(function () {
+  $(".btn_icon_nav").click(function () {
+    //=> open menu
+    $(".menu-mobile").toggleClass("active-c2");
+  });
+
+  $(".click-down").click(function () {
+    //=> open menu
+    $(this).closest("li").toggleClass("active-c3 active-li");
+  });
+  $(".active-footer-mobile").click(function () {
+    //=> open menu
+    $(this).closest("li").toggleClass("active-menu-bottom");
+  });
+
+  $(".close-menu_vvn").click(function () {
+    //=> close menu
+    $(".menu-mobile").toggleClass(" active-c2");
+  });
+});
+/*------------------js ve dau trng--------------------------*/
+jQuery(document).ready(function ($) {
+  // $(".nav_bottom .home.active").addClass("active-menuPC");
+  // var width = $(window).width();
+  // $(".page_in_").removeClass("active-menuPC");
+  // if (width <= 1200) {
+  //   $(".nav_bottom .active").removeClass("active-menuPC");
+  // } else {
+  //   if ($(".main_vnn").length = !0) {
+  //     $(window).scroll(function () {
+  //       var e = $(window).scrollTop();
+  //       if (e > 0) {
+  //         $(".nav_bottom .home.active").removeClass("active-menuPC");
+  //       } else {
+  //         $(".nav_bottom .home.active").addClass("active-menuPC");
+  //       }
+  //     });
+  //   }
+  //   // $(".nav_bottom li").click(function () {
+  //   //   $("body,html").animate({
+  //   //     scrollTop: 0,
+  //   //   });
+  //   // });
+  // }
+});
+jQuery(document).ready(function ($) {
+  if ($(".vedautrang").length > 0) {
+    $(window).scroll(function () {
+      var e = $(window).scrollTop();
+      if (e > 300) {
+        $(".vedautrang").show();
+      } else {
+        $(".vedautrang").hide();
+      }
+    });
+    $(".vedautrang").click(function () {
+      $("body,html").animate({
+        scrollTop: 0,
+      });
+    });
+  }
+  /*-----tốc độ cuộn---------*/
+  $('a[href*="#"]')
+    .not('[href="#"]')
+    .not('[href="#0"]')
+    .click(function (e) {
+      var data_id = $(this).attr("href");
+      $("html, body").animate(
+        {
+          scrollTop: $(data_id).offset().top - 200,
+        },
+        "5000"
+      );
+    });
+});

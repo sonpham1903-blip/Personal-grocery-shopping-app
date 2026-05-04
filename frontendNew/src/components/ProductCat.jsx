@@ -6,17 +6,21 @@ import ktsRequest from "../../ultis/ktsrequest";
 import { Link } from "react-router-dom";
 const ProductCat = (props) => {
   const [data, setData] = useState([]);
+  const categoryName = props.categoryName || props.catTitle || "";
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await ktsRequest.get(`/products?q=${props.catTitle}&l=8`);
+        const res = await ktsRequest.get(
+          `/products?search=${encodeURIComponent(categoryName)}&limit=8`
+        );
         setData(res.data);
       } catch (error) {
         console.log(error);
       }
     };
     fetchData();
-  }, []);
+  }, [categoryName]);
   return (
     <div className="w-full bottom-0 mt-1 py-2">
       <div className="max-w-screen-xl mx-auto">
@@ -24,11 +28,11 @@ const ProductCat = (props) => {
           <div className="flex justify-start items-center gap-3">
             <img src={icon_ns} alt="" />
             <h3 className="uppercase font-bold ">
-              {props.catTitle ? props.catTitle : "tiêu đề"}
+              {categoryName || "tiêu đề"}
             </h3>
           </div>
           <Link
-            to={`/products?q=${props.catTitle}`}
+            to={`/products?q=${encodeURIComponent(categoryName)}`}
             className="flex items-center pr-4 hover:text-primary"
           >
             Xem tất cả

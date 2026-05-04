@@ -301,13 +301,13 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setOpenMenu(!openMenu);
-                    navigate("/dashboard/home");
+                    navigate("/profile");
                   }}
                 >
                   Trang cá nhân
                 </button>
                 <a
-                  href="http://quantri.sale168.vn"
+                  href="http://localhost:8990/login"
                   className="hover:bg-primary p-2"
                 >
                   Bạn là người bán

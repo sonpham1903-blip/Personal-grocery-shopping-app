@@ -8,6 +8,7 @@ import { vnd } from "../../ultis/ktsFunc";
 
 const Orders = () => {
   const [data, setData] = useState([]);
+  const [handoverDrafts, setHandoverDrafts] = useState({});
   const { currentUser } = useSelector((state) => state.user);
   const { token } = currentUser;
   const [refresh, setRefresh] = useState(false);
@@ -15,28 +16,27 @@ const Orders = () => {
     {
       id: 0,
       bgColor: "bg-blue-300",
-      name: "Đơn mới",
+      name: "Chờ xác nhận",
       textColor: "text-blue-700",
     },
     {
       id: 1,
       bgColor: "border border-green-500",
-      name: "Sẵn sàng thu gom",
+      name: "Hàng đang chuẩn bị",
       textColor: "text-green-700",
     },
     {
       id: 2,
-      bgColor: "bg-green-300",
-      name: "Giao xong",
-      textColor: "text-green-700",
-    },
-    {
-      id: 3,
       bgColor: "bg-orange-300",
       name: "Đang giao",
       textColor: "text-orange-700",
     },
-
+    {
+      id: 3,
+      bgColor: "bg-green-300",
+      name: "Giao xong",
+      textColor: "text-green-700",
+    },
     { id: 4, bgColor: "bg-red-300", name: "Đã hủy", textColor: "text-red-700" },
   ];
   useEffect(() => {
@@ -68,6 +68,68 @@ const Orders = () => {
       total
     );
   };
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const res = await ktsRequest.put(
+        `/orders/${id}`,
+        {
+          status: newStatus,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(res.data);
+      setRefresh(true);
+    } catch (err) {
+      err.response
+        ? toast.error(err.response.data)
+        : toast.error("Network Error!");
+    }
+  };
+
+  const handleDraftChange = (orderId, field, value) => {
+    setHandoverDrafts((prev) => ({
+      ...prev,
+      [orderId]: {
+        ...(prev[orderId] || {}),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleHandover = async (orderId) => {
+    const draft = handoverDrafts[orderId] || {};
+
+    try {
+      const res = await ktsRequest.post(
+        `/orders/${orderId}/handover`,
+        {
+          carrierName: draft.carrierName || "",
+          trackingCode: draft.trackingCode || "",
+          shippingOrderCode: draft.shippingOrderCode || "",
+          note: draft.note || "",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(res.data);
+      setRefresh(true);
+    } catch (err) {
+      err.response
+        ? toast.error(err.response.data)
+        : toast.error("Network Error!");
+    }
+  };
+
   return (
     <div className="w-full p-2">
       <div className="mb-3 flex justify-end">
@@ -87,13 +149,15 @@ const Orders = () => {
           <div className="w-3/12">Chi tiết đơn hàng</div>
           <div className="w-1/12">Thành tiền</div>
           <div className="w-2/12 text-center">Khách hàng</div>
-          <div className="w-2/12 text-center">Ghi chú</div>
+          <div className="w-1/12 text-center">Ghi chú</div>
           <div className="w-1/12">Trạng thái</div>
+          <div className="w-1/12">Thao tác</div>
         </div>
         {data?.length > 0 ? (
           <div className="rounded divide-y divide-primary divide-dashed text-gray-800">
             {data.map((o, i) => {
               const st = o.status;
+              const handoverData = handoverDrafts[o._id] || o.shippingInfo || {};
               return (
                 <div className="w-full flex p-1 gap-1 items-center" key={i}>
                   <div className="w-1/4 flex">
@@ -141,7 +205,7 @@ const Orders = () => {
                     <div>{o?.buyerName}</div>
                     <div>{o?.buyerPhone}</div>
                   </div>
-                  <div className="w-2/12">{o?.note}</div>
+                  <div className="w-1/12">{o?.note}</div>
                   <div className="w-1/12">
                     {" "}
                     <span
@@ -149,6 +213,62 @@ const Orders = () => {
                     >
                       {status[st].name}
                     </span>
+                  </div>
+                  <div className="w-1/12 text-xs space-y-1">
+                    {st === 0 && (
+                      <button
+                        className="w-full rounded border border-blue-600 bg-blue-50 px-2 py-1 text-blue-700 hover:bg-blue-600 hover:text-white"
+                        onClick={() => handleUpdateStatus(o._id, 1)}
+                      >
+                        Xác nhận đơn hàng
+                      </button>
+                    )}
+
+                    {st === 1 && (
+                      <div className="space-y-1">
+                        <input
+                          className="w-full rounded border px-2 py-1"
+                          placeholder="Đơn vị vận chuyển"
+                          value={handoverData.carrierName || ""}
+                          onChange={(e) =>
+                            handleDraftChange(o._id, "carrierName", e.target.value)
+                          }
+                        />
+                        <input
+                          className="w-full rounded border px-2 py-1"
+                          placeholder="Mã vận đơn"
+                          value={handoverData.trackingCode || ""}
+                          onChange={(e) =>
+                            handleDraftChange(o._id, "trackingCode", e.target.value)
+                          }
+                        />
+                        <input
+                          className="w-full rounded border px-2 py-1"
+                          placeholder="Mã đơn vận chuyển (tuỳ chọn)"
+                          value={handoverData.shippingOrderCode || ""}
+                          onChange={(e) =>
+                            handleDraftChange(o._id, "shippingOrderCode", e.target.value)
+                          }
+                        />
+                        <button
+                          className="w-full rounded border border-orange-600 bg-orange-50 px-2 py-1 text-orange-700 hover:bg-orange-500 hover:text-white"
+                          onClick={() => handleHandover(o._id)}
+                        >
+                          Bàn giao vận chuyển
+                        </button>
+                      </div>
+                    )}
+
+                    {st >= 2 && (
+                      <div className="text-gray-600">
+                        {o?.shippingInfo?.carrierName && (
+                          <div>{`DVVC: ${o.shippingInfo.carrierName}`}</div>
+                        )}
+                        {o?.shippingInfo?.trackingCode && (
+                          <div>{`Mã vận đơn: ${o.shippingInfo.trackingCode}`}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

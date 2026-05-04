@@ -26,7 +26,6 @@ const Products = () => {
     return links.filter(Boolean);
   };
   const keys = ["productName", "cat", "shopID"];
-  const [status, setStatus] = useState([]);
   const [refresh, setRefresh] = useState(false);
   useEffect(() => {
     setRefresh(false);
@@ -47,6 +46,7 @@ const Products = () => {
     fetchData();
   }, [refresh]);
   const handleClick = async (product) => {
+    if (!isAdmin) return;
     setRefresh(true);
     try {
       await ktsRequest.put(
@@ -164,25 +164,37 @@ const Products = () => {
                   <div className="w-2/12">{p.cat}</div>
                   <div className="w-2/12">{vnd(p?.currentPrice)}</div>
                   <div className="w-2/12">
-                    <div
-                      className={`w-12 h-6 bg-${
-                        p.active ? "primary" : "slate-400"
-                      } rounded-full relative`}
-                    >
-                      <button
-                        onClick={() => handleClick(p)}
-                        className={`w-5 h-5 bg-white  rounded-full ${
-                          p.active
-                            ? "right-1 text-green-500"
-                            : "left-1 text-red-500"
-                        }
-                        } duration-400 transition-transform top-0.5 absolute flex items-center justify-center`}
+                    {isAdmin ? (
+                      <div
+                        className={`w-12 h-6 bg-${
+                          p.active ? "primary" : "slate-400"
+                        } rounded-full relative`}
                       >
-                        <span className="text-xs font-semibold mb-1 mr-0.5">
-                          {p.active ? "on" : "off"}
-                        </span>
-                      </button>
-                    </div>
+                        <button
+                          onClick={() => handleClick(p)}
+                          className={`w-5 h-5 bg-white  rounded-full ${
+                            p.active
+                              ? "right-1 text-green-500"
+                              : "left-1 text-red-500"
+                          }
+                        } duration-400 transition-transform top-0.5 absolute flex items-center justify-center`}
+                        >
+                          <span className="text-xs font-semibold mb-1 mr-0.5">
+                            {p.active ? "on" : "off"}
+                          </span>
+                        </button>
+                      </div>
+                    ) : (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
+                          p.active
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {p.active ? "Đang bật" : "Đang tắt"}
+                      </span>
+                    )}
                   </div>
                   {!isAdmin && (
                     <div className="w-1/12 flex gap-2">

@@ -15,13 +15,13 @@ const Home = () => {
     {
       id: 0,
       bgColor: "bg-blue-300",
-      name: "Đơn mới",
+      name: "Chờ xác nhận",
       textColor: "text-blue-700",
     },
     {
       id: 1,
       bgColor: "border border-green-500",
-      name: "Sẵn sàng thu gom",
+      name: "Hàng đang chuẩn bị",
       textColor: "text-green-700",
     },
     {

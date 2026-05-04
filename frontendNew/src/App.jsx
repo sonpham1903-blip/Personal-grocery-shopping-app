@@ -7,6 +7,7 @@ import AdminLogin from "./pages/shop/Login";
 import Products from "./pages/user/Products";
 import Product from "./pages/user/Product";
 import Cart from "./pages/user/Cart";
+import Profile from "./pages/user/Profile";
 import Login from "./pages/user/Login";
 import NotFound from "./pages/user/NotFound";
 import ktsRequest from "../ultis/ktsrequest";
@@ -27,6 +28,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:productId" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/notfound" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/notfound" replace />} />
           <Route path="/login" element={<Login />} />

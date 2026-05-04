@@ -60,6 +60,32 @@ const OrderTrackingSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const ShippingInfoSchema = new mongoose.Schema(
+  {
+    carrierName: {
+      type: String,
+      default: "",
+    },
+    trackingCode: {
+      type: String,
+      default: "",
+    },
+    shippingOrderCode: {
+      type: String,
+      default: "",
+    },
+    note: {
+      type: String,
+      default: "",
+    },
+    handedOverAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
 const OrderSchema = new mongoose.Schema(
   {
     orderNumber: {
@@ -131,6 +157,10 @@ const OrderSchema = new mongoose.Schema(
     tracking: {
       type: [OrderTrackingSchema],
       default: [],
+    },
+    shippingInfo: {
+      type: ShippingInfoSchema,
+      default: () => ({}),
     },
   },
   { timestamps: true }

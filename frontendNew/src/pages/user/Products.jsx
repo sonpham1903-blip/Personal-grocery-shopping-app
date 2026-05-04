@@ -14,7 +14,9 @@ const products = () => {
     const query = searchParams.get("q") || "";
     const fetchData = async () => {
       try {
-        const res = await ktsRequest.get(`/products?q=${query}`);
+        const res = await ktsRequest.get(
+          `/products?search=${encodeURIComponent(query)}`
+        );
         setData(res.data);
         setLoading(false);
       } catch (err) {

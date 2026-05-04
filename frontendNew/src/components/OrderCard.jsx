@@ -54,22 +54,28 @@ const OrderCard = ({ data, openmodal, token, details }) => {
     {
       id: 0,
       bgColor: "bg-blue-300",
-      name: "Đơn mới",
+      name: "Chờ xác nhận",
       textColor: "text-blue-700",
     },
     {
       id: 1,
+      bgColor: "border border-green-500",
+      name: "Hàng đang chuẩn bị",
+      textColor: "text-green-700",
+    },
+    {
+      id: 2,
       bgColor: "bg-orange-300",
       name: "Đang giao",
       textColor: "text-orange-700",
     },
     {
-      id: 2,
+      id: 3,
       bgColor: "bg-green-300",
       name: "Giao xong",
       textColor: "text-green-700",
     },
-    { id: 3, bgColor: "bg-red-300", name: "Đã hủy", textColor: "text-red-700" },
+    { id: 4, bgColor: "bg-red-300", name: "Đã hủy", textColor: "text-red-700" },
   ];
   return (
     <div className="">
@@ -242,11 +248,11 @@ const OrderCard = ({ data, openmodal, token, details }) => {
           </button>
           <button
             className={`p-1.5 rounded border ${
-              st > 1
+              st > 0
                 ? "bg-gray-300 border-gray-300"
                 : "bg-white border-red-600 text-red-600 hover:border-red-600 hover:bg-red-600 hover:text-white"
             }`}
-            disabled={st > 1}
+            disabled={st > 0}
             title="hủy đơn"
             onClick={() => setOpenAlert(!openAlert)}
           >

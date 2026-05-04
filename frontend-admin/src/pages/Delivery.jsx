@@ -20,22 +20,28 @@ const Delivery = () => {
     {
       id: 0,
       bgColor: "bg-blue-300",
-      name: "Đơn mới",
+      name: "Chờ xác nhận",
       textColor: "text-blue-700",
     },
     {
       id: 1,
+      bgColor: "border border-green-500",
+      name: "Hàng đang chuẩn bị",
+      textColor: "text-green-700",
+    },
+    {
+      id: 2,
       bgColor: "bg-orange-300",
       name: "Đang giao",
       textColor: "text-orange-700",
     },
     {
-      id: 2,
+      id: 3,
       bgColor: "bg-green-300",
       name: "Giao xong",
       textColor: "text-green-700",
     },
-    { id: 3, bgColor: "bg-red-300", name: "Đã hủy", textColor: "text-red-700" },
+    { id: 4, bgColor: "bg-red-300", name: "Đã hủy", textColor: "text-red-700" },
   ];
   useEffect(() => {
     const socket = io.connect(ktsSocket);
@@ -239,24 +245,14 @@ const Delivery = () => {
                     </div>
                   </div>
                   <div className="w-2/12">
-                    <button
-                      className="block p-2 hover:bg-primary rounded hover:text-white"
-                      onClick={() => handleClick1(o?._id, 2)}
-                    >
-                      Xác nhận giao xong
-                    </button>
-                    <button
-                      className="block p-2 hover:bg-blue-500 rounded hover:text-white"
-                      onClick={() => handleClick1(o?._id, 1)}
-                    >
-                      Điều giao nhận
-                    </button>
-                    <button
-                      className="block p-2 hover:bg-red-500 rounded hover:text-white"
-                      onClick={() => handleClick1(o?._id, 3)}
-                    >
-                      Hủy giao nhận
-                    </button>
+                    {st === 2 && (
+                      <button
+                        className="block p-2 hover:bg-primary rounded hover:text-white"
+                        onClick={() => handleClick1(o?._id, 3)}
+                      >
+                        Xác nhận giao xong
+                      </button>
+                    )}
                   </div>
                 </div>
               );

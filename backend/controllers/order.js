@@ -2,6 +2,31 @@ import { createError } from "../error.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 const permistion = ["admin", "shipper"];
+const ORDER_STATUS = {
+  PENDING_CONFIRMATION: 0,
+  PREPARING: 1,
+  SHIPPING: 2,
+  DELIVERED: 3,
+  CANCELED: 4,
+};
+
+const getTrackingDescByStatus = (status) => {
+  switch (status) {
+    case ORDER_STATUS.PENDING_CONFIRMATION:
+      return "Đơn hàng chờ xác nhận";
+    case ORDER_STATUS.PREPARING:
+      return "Người bán đã xác nhận, hàng đang chuẩn bị";
+    case ORDER_STATUS.SHIPPING:
+      return "Đơn hàng đã bàn giao cho đơn vị vận chuyển";
+    case ORDER_STATUS.DELIVERED:
+      return "Đơn hàng đã giao thành công";
+    case ORDER_STATUS.CANCELED:
+      return "Đơn hàng đã bị hủy";
+    default:
+      return "Cập nhật trạng thái đơn hàng";
+  }
+};
+
 export const createOrder = async (req, res, next) => {
   try {
     const rawProducts = Array.isArray(req.body.products) ? req.body.products : [];
@@ -80,8 +105,8 @@ export const createOrder = async (req, res, next) => {
       orderNumber,
       tracking: [
         {
-          status: 0,
-          desc: "Tạo đơn thành công",
+          status: ORDER_STATUS.PENDING_CONFIRMATION,
+          desc: getTrackingDescByStatus(ORDER_STATUS.PENDING_CONFIRMATION),
           time: new Date(),
         },
       ],
@@ -197,49 +222,166 @@ export const updateById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json("Đơn hàng không khả dụng");
-    
-    // Kiểm tra quyền
+
     const isAdmin = req.user.role === "admin";
     const isShipper = req.user.role === "shipper" && order.shipperId === req.user.id;
+    const isBuyer = String(order.buyerId) === String(req.user.id);
     const isShopOwner =
       req.user.role === "shop" &&
       order.products?.some((p) => String(p.shopID) === String(req.user.id));
-    
-    if (!isAdmin && !isShipper && !isShopOwner) {
+
+    if (!isAdmin && !isShipper && !isShopOwner && !isBuyer) {
       return res
         .status(403)
         .json("Bạn không được cấp quyền thực hiện chức năng này!");
     }
-    
-    // Xác định dữ liệu được phép cập nhật
-    let updateData = {};
-    if (isAdmin) {
-      // Admin cập nhật tất cả
-      updateData = req.body;
-    } else if (isShipper) {
-      // Shipper chỉ được cập nhật status
-      updateData = { status: req.body.status };
-    } else if (isShopOwner) {
-      // Shop không được cập nhật status, chỉ cập nhật thông tin khác
-      const { status, ...otherData } = req.body;
-      updateData = otherData;
+
+    const requestedStatus =
+      req.body.status === undefined ? undefined : Number(req.body.status);
+
+    if (Number.isNaN(requestedStatus)) {
+      return res.status(400).json("Trạng thái đơn hàng không hợp lệ");
     }
-    
+
+    if (isShopOwner) {
+      if (requestedStatus !== ORDER_STATUS.PREPARING) {
+        return res
+          .status(403)
+          .json("Người bán chỉ được xác nhận đơn hàng sang trạng thái đang chuẩn bị");
+      }
+      if (order.status !== ORDER_STATUS.PENDING_CONFIRMATION) {
+        return res
+          .status(400)
+          .json("Chỉ có thể xác nhận đơn hàng đang chờ xác nhận");
+      }
+    }
+
+    if (isShipper) {
+      if (requestedStatus !== ORDER_STATUS.DELIVERED) {
+        return res.status(403).json("Shipper chỉ được phép xác nhận giao xong");
+      }
+      if (order.status !== ORDER_STATUS.SHIPPING) {
+        return res
+          .status(400)
+          .json("Chỉ có thể xác nhận giao xong khi đơn đang giao");
+      }
+    }
+
+    if (isBuyer) {
+      if (requestedStatus !== ORDER_STATUS.DELIVERED) {
+        return res
+          .status(403)
+          .json("Người mua chỉ được phép xác nhận đã nhận hàng");
+      }
+
+      if (order.status !== ORDER_STATUS.SHIPPING) {
+        return res
+          .status(400)
+          .json("Chỉ có thể xác nhận đã nhận hàng khi đơn đang giao");
+      }
+    }
+
+    if (
+      requestedStatus !== undefined &&
+      !Object.values(ORDER_STATUS).includes(requestedStatus)
+    ) {
+      return res.status(400).json("Trạng thái đơn hàng không hợp lệ");
+    }
+
+    const updateData = isAdmin
+      ? { ...req.body }
+      : {
+          status: requestedStatus,
+        };
+
+    if (requestedStatus === undefined) {
+      return res.status(400).json("Thiếu trạng thái cần cập nhật");
+    }
+
+    updateData.status = requestedStatus;
+
+    const updatePayload = {
+      $set: updateData,
+    };
+
+    if (order.status !== requestedStatus) {
+      updatePayload.$push = {
+        tracking: {
+          status: requestedStatus,
+          desc: getTrackingDescByStatus(requestedStatus),
+          time: new Date(),
+        },
+      };
+    }
+
+    await Order.findByIdAndUpdate(
+      req.params.id,
+      updatePayload,
+      { new: true }
+    );
+    res.status(200).json("Cập nhật đơn hàng thành công");
+  } catch (error) {
+    next(createError(500, `Lỗi không xác định`));
+  }
+};
+export const handover = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json("Đơn hàng không khả dụng");
+
+    const isAdmin = req.user.role === "admin";
+    const isShopOwner =
+      req.user.role === "shop" &&
+      order.products?.some((p) => String(p.shopID) === String(req.user.id));
+
+    if (!isAdmin && !isShopOwner) {
+      return res
+        .status(403)
+        .json("Bạn không được cấp quyền thực hiện chức năng này!");
+    }
+
+    if (order.status !== ORDER_STATUS.PREPARING) {
+      return res
+        .status(400)
+        .json("Chỉ có thể bàn giao vận chuyển khi đơn đang chuẩn bị hàng");
+    }
+
+    const carrierName = String(req.body.carrierName || "").trim();
+    const trackingCode = String(req.body.trackingCode || "").trim();
+    const shippingOrderCode = String(req.body.shippingOrderCode || "").trim();
+    const shippingNote = String(req.body.note || "").trim();
+
+    if (!carrierName || !trackingCode) {
+      return res
+        .status(400)
+        .json("Vui lòng nhập đơn vị vận chuyển và mã vận đơn");
+    }
+
     await Order.findByIdAndUpdate(
       req.params.id,
       {
-        $set: updateData,
+        $set: {
+          status: ORDER_STATUS.SHIPPING,
+          shippingInfo: {
+            carrierName,
+            trackingCode,
+            shippingOrderCode,
+            note: shippingNote,
+            handedOverAt: new Date(),
+          },
+        },
         $push: {
           tracking: {
-            status: req.body.status,
-            desc: isShipper ? "Shipper cập nhật trạng thái" : isShopOwner ? "Shop cập nhật thông tin" : "Thay đổi trạng thái đơn hàng",
+            status: ORDER_STATUS.SHIPPING,
+            desc: `${getTrackingDescByStatus(ORDER_STATUS.SHIPPING)} (${carrierName} - ${trackingCode})`,
             time: new Date(),
           },
         },
       },
       { new: true }
     );
-    res.status(200).json("Cập nhật đơn hàng thành công");
+
+    res.status(200).json("Bàn giao vận chuyển thành công");
   } catch (error) {
     next(createError(500, `Lỗi không xác định`));
   }
@@ -272,11 +414,11 @@ export const cancel = async (req, res, next) => {
     await Order.findByIdAndUpdate(
       req.params.id,
       {
-        $set: { status: 3 },
+        $set: { status: ORDER_STATUS.CANCELED },
         $push: {
           tracking: {
-            status: 3,
-            desc: "Đơn hàng đã bị hủy",
+            status: ORDER_STATUS.CANCELED,
+            desc: getTrackingDescByStatus(ORDER_STATUS.CANCELED),
             time: new Date(),
           },
         },

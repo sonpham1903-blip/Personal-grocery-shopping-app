@@ -19,6 +19,12 @@ const CategorySchema = new mongoose.Schema(
       default: 1,
       enum: [1, 0, -1],
     },
+    path: {
+      type: String,
+    },
+    viewBox: {
+      type: String,
+    },
     createdBy: {
       type: String,
     },

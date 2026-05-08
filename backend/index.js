@@ -8,6 +8,7 @@ import productRoute from "./routes/product.js";
 import orderRoute from "./routes/order.js";
 import userRoute from "./routes/user.js";
 import postRoute from "./routes/post.js";
+import commentRouter from "./routes/comment.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/products", productRoute);
 app.use("/orders", orderRoute);
 app.use("/users", userRoute);
 app.use("/posts", postRoute);
+app.use("/comments", commentRouter);
 
 
 async function startServer() {

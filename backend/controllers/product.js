@@ -11,7 +11,11 @@ export const createProduct = async (req, res, next) => {
       return res.status(403).json("Hình ảnh sản phẩm không hợp lệ");
     if (!req.user?.id)
       return res.status(401).json("Bạn chưa đăng nhập");
-    const newProduct = new Product({ shopID: req.user.id, ...req.body });
+    const payload = { ...req.body };
+    if (req.user?.role !== "admin") {
+      delete payload.active;
+    }
+    const newProduct = new Product({ shopID: req.user.id, ...payload });
     await newProduct.save();
     res.status(200).json("Tạo mới sản phẩm thành công");
   } catch (error) {
@@ -76,6 +80,27 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
+export const getMyProducts = async (req, res, next) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json("Bạn chưa đăng nhập");
+    }
+
+    const isAdmin = req.user?.role === "admin";
+    const products = isAdmin
+      ? await Product.find()
+      : await Product.find({ shopID: req.user.id });
+
+    const list = products.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.status(200).json(list);
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const getProduct = async (req, res, next) => {
   try {
@@ -104,11 +129,25 @@ export const updateProduct = async (req, res, next) => {
     } else {
       const isAdmin = req.user?.role === "admin";
       const isShopOwner = req.user?.role === "shop" && product.shopID === req.user?.id;
+      const updateData = { ...req.body };
+      const triesToChangeActive =
+        Object.prototype.hasOwnProperty.call(updateData, "active") &&
+        Boolean(updateData.active) !== Boolean(product.active);
+
+      // Chỉ admin mới được phép thay đổi trạng thái bày bán.
+      if (!isAdmin) {
+        if (triesToChangeActive) {
+          return next(
+            createError(403, "Chỉ admin mới được phép thay đổi trạng thái bày bán")
+          );
+        }
+        delete updateData.active;
+      }
 
       if (isAdmin || isShopOwner) {
         await Product.findByIdAndUpdate(
           req.params.id,
-          { $set: req.body },
+          { $set: updateData },
           { new: true }
         );
         res.status(200).json("Cập nhật sản phẩm thành công");
@@ -143,6 +182,33 @@ export const deleteProduct = async (req, res, next) => {
         );
       }
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLastest = async (req, res, next) => {
+  const limit = req.params.limit || 0;
+  try {
+    const products = await Product.find({ active: true });
+    const list =
+      limit > 0
+        ? products.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
+        : products.sort((a, b) => b.createdAt - a.createdAt);
+    res.status(200).json(list);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getHostest = async (req, res, next) => {
+  const limit = req.params.limit || 0;
+  try {
+    const products = await Product.find({ active: true });
+    const list =
+      limit > 0
+        ? products.sort((a, b) => b.outStock - a.outStock).slice(0, limit)
+        : products.sort((a, b) => b.outStock - a.outStock);
+    res.status(200).json(list);
   } catch (error) {
     next(error);
   }

@@ -10,6 +10,7 @@
 2. [Category APIs (Danh mục)](#category-apis)
 3. [Product APIs (Sản phẩm)](#product-apis)
 4. [Order APIs (Đơn hàng)](#order-apis)
+5. [User APIs (Người dùng)](#user-apis)
 
 ---
 
@@ -840,6 +841,260 @@ hoặc
 "Bạn không được cấp quyền thực hiện chức năng này!"
 hoặc
 "Trạng thái đơn hàng không cho phép hủy đơn"
+```
+
+---
+
+## User APIs
+
+Tất cả endpoint trong mục này đều yêu cầu Bearer token.
+
+### 1. Lấy Danh Sách Người Dùng
+
+**Phương thức:** `GET`  
+**Path:** `/users`  
+**Yêu cầu xác thực:** Có (Bearer Token)  
+**Quyền yêu cầu:** admin hoặc staff
+
+**Request Header:**
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+**Response (200):**
+```json
+[
+  {
+    "_id": "string",
+    "username": "string",
+    "email": "string",
+    "phone": "string",
+    "fullname": "string",
+    "role": "string",
+    "status": "number",
+    "createdAt": "timestamp",
+    "updatedAt": "timestamp"
+  }
+]
+```
+
+---
+
+### 2. Lấy Thông Tin User Theo ID
+
+**Phương thức:** `GET`  
+**Path:** `/users/:id`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `id` (string): MongoDB ID của user
+
+**Response (200):**
+```json
+{
+  "_id": "string",
+  "username": "string",
+  "email": "string",
+  "phone": "string",
+  "fullname": "string",
+  "role": "string",
+  "status": "number",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
+
+---
+
+### 3. Tìm User Theo Số Điện Thoại
+
+**Phương thức:** `GET`  
+**Path:** `/users/find/:phone`  
+**Yêu cầu xác thực:** Có (Bearer Token)  
+**Quyền yêu cầu:** admin hoặc staff
+
+**Path Parameters:**
+- `phone` (string): số điện thoại cần tìm
+
+**Response (200):**
+```json
+[
+  {
+    "_id": "string",
+    "phone": "string",
+    "username": "string"
+  }
+]
+```
+
+---
+
+### 4. Cập Nhật Thông Tin User
+
+**Phương thức:** `PUT`  
+**Path:** `/users/:id`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `id` (string): MongoDB ID của user cần cập nhật
+
+**Request Body - JSON:**
+```json
+{
+  "fullname": "string (optional)",
+  "phone": "string (optional)",
+  "email": "string (optional)",
+  "address": "string (optional)"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Cập nhật thông tin tài khoản thành công...",
+  "data": {
+    "_id": "string",
+    "username": "string",
+    "role": "string"
+  }
+}
+```
+
+---
+
+### 5. Cập Nhật Quyền User
+
+**Phương thức:** `POST`  
+**Path:** `/users/updaterole`  
+**Yêu cầu xác thực:** Có (Bearer Token)  
+**Quyền yêu cầu:** role nằm trong biến môi trường `ROLE`
+
+**Request Body - JSON:**
+```json
+{
+  "userID": "string (required)",
+  "new_role": "string (required)"
+}
+```
+
+**Response (200):**
+```
+"Cập nhật quyền user thành công"
+```
+
+---
+
+### 6. Đổi Mật Khẩu
+
+**Phương thức:** `PUT`  
+**Path:** `/users/changepwd/:id`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `id` (string): MongoDB ID của user cần đổi mật khẩu
+
+**Request Body - JSON:**
+```json
+{
+  "password": "string (required nếu role không thuộc AUTO_TRUE_ROLE_LV1)",
+  "newpwd": "string (required)"
+}
+```
+
+**Response (200):**
+```
+"Thay đổi mật khẩu thành công, bạn cần đăng nhập lại để áp dụng (các) thay đổi"
+```
+
+---
+
+### 7. Cập Nhật Trạng Thái User
+
+**Phương thức:** `PUT`  
+**Path:** `/users/:id/status/:newstatus`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Lưu ý:** Endpoint đã được khai báo route nhưng logic xử lý trong controller hiện chưa triển khai đầy đủ.
+
+---
+
+### 8. Like Sản Phẩm
+
+**Phương thức:** `PUT`  
+**Path:** `/users/like/:productid`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `productid` (string): MongoDB ID của sản phẩm
+
+**Response (200):**
+```
+"Liked"
+```
+
+---
+
+### 9. Bỏ Like Sản Phẩm
+
+**Phương thức:** `PUT`  
+**Path:** `/users/dislike/:productid`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `productid` (string): MongoDB ID của sản phẩm
+
+**Response (200):**
+```
+"Disliked"
+```
+
+---
+
+### 10. Follow Shop
+
+**Phương thức:** `PUT`  
+**Path:** `/users/follow/:shopId`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `shopId` (string): MongoDB ID của shop
+
+**Response (200):**
+```
+"followed"
+```
+
+---
+
+### 11. Unfollow Shop
+
+**Phương thức:** `PUT`  
+**Path:** `/users/unfollow/:shopId`  
+**Yêu cầu xác thực:** Có (Bearer Token)
+
+**Path Parameters:**
+- `shopId` (string): MongoDB ID của shop
+
+**Response (200):**
+```
+"UnFollowed"
+```
+
+---
+
+### 12. Xóa User
+
+**Phương thức:** `DELETE`  
+**Path:** `/users/:id`  
+**Yêu cầu xác thực:** Có (Bearer Token)  
+**Quyền yêu cầu:** admin hoặc staff
+
+**Path Parameters:**
+- `id` (string): MongoDB ID của user cần xóa
+
+**Response (200):**
+```
+"User đã bị xóa"
 ```
 
 ---

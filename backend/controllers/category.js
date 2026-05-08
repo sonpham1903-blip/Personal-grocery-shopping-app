@@ -1,9 +1,33 @@
 import Category from "../models/Category.js";
 import {createError} from "../error.js";
 
+const CATEGORY_CODE_PREFIX = "CAT";
+const CATEGORY_CODE_PADDING = 3;
+
+const getNextCategoryCode = async () => {
+  const cats = await Category.find({
+    code: new RegExp(`^${CATEGORY_CODE_PREFIX}\\d+$`),
+  }).select(["code"]);
+
+  const maxCodeNumber = cats.reduce((max, cat) => {
+    const numericPart = Number(
+      String(cat.code || "").replace(CATEGORY_CODE_PREFIX, "")
+    );
+    if (!Number.isFinite(numericPart)) return max;
+    return numericPart > max ? numericPart : max;
+  }, 0);
+
+  return `${CATEGORY_CODE_PREFIX}${String(maxCodeNumber + 1).padStart(
+    CATEGORY_CODE_PADDING,
+    "0"
+  )}`;
+};
+
 export const create = async (req, res, next) => {
   try {
-    const newCat = new Category(req.body);
+    const nextCode = await getNextCategoryCode();
+    const { code, ...payload } = req.body || {};
+    const newCat = new Category({ ...payload, code: nextCode });
     await newCat.save();
     res.status(200).json("tạo mới danh mục thành công");
   } catch (error) {

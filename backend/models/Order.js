@@ -8,6 +8,14 @@ const OrderProductSchema = new mongoose.Schema(
     productName: {
       type: String,
     },
+    img: {
+      type: String,
+      default: "",
+    },
+    shopName: {
+      type: String,
+      default: "Shop",
+    },
     shopID: {
       type: String,
     },
@@ -17,6 +25,11 @@ const OrderProductSchema = new mongoose.Schema(
       min: 0,
     },
     unitPrice: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    currentPrice: {
       type: Number,
       default: 0,
       min: 0,
@@ -42,6 +55,32 @@ const OrderTrackingSchema = new mongoose.Schema(
     time: {
       type: Date,
       default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
+const ShippingInfoSchema = new mongoose.Schema(
+  {
+    carrierName: {
+      type: String,
+      default: "",
+    },
+    trackingCode: {
+      type: String,
+      default: "",
+    },
+    shippingOrderCode: {
+      type: String,
+      default: "",
+    },
+    note: {
+      type: String,
+      default: "",
+    },
+    handedOverAt: {
+      type: Date,
+      default: null,
     },
   },
   { _id: false }
@@ -94,9 +133,9 @@ const OrderSchema = new mongoose.Schema(
       min: 0,
     },
     shipMode: {
-      type: Number,
-      default: 0,
-      enum: [0, 1],
+      type: String,
+      default: "ems",
+      enum: ["ems", "vnpost", "best"],
     },
     payment: {
       type: String,
@@ -118,6 +157,10 @@ const OrderSchema = new mongoose.Schema(
     tracking: {
       type: [OrderTrackingSchema],
       default: [],
+    },
+    shippingInfo: {
+      type: ShippingInfoSchema,
+      default: () => ({}),
     },
   },
   { timestamps: true }

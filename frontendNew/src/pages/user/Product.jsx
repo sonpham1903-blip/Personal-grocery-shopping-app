@@ -536,7 +536,6 @@ const Product = () => {
                       userName={
                         currentUser?.displayName || currentUser?.username
                       }
-                      userImg={currentUser?.img}
                     />
                   </div>
                 </div>

@@ -92,6 +92,24 @@ const Sidebar = () => {
             {open && <span className="whitespace-pre absolute left-20">Gian hàng</span>}
           </a>
         )}
+        {role === "admin" || role === "shop" ? (
+          <button
+            onClick={() => navigate("/admin/bai-viet")}
+            className="flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-sm text-gray-800 hover:text-primary"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            {open && <span className="whitespace-pre absolute left-20">Bài viết</span>}
+          </button>
+        ) : null}
         <button
           className="flex items-center gap-5 pl-4 py-2 rounded border-primary border text-sm m-2 font-semibold hover:bg-primary hover:text-white uppercase"
           onClick={(e) => {

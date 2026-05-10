@@ -426,25 +426,7 @@ const Product = () => {
                   Mô tả
                 </a>
               </li>
-              {/* <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
-                <a
-                  className={
-                    "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
-                    (openTab === 2
-                      ? "text-white bg-primary"
-                      : "text-primary bg-white")
-                  }
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenTab(2);
-                  }}
-                  data-toggle="tab"
-                  href="#link2"
-                  role="tablist"
-                >
-                  thông tin bổ sung
-                </a>
-              </li> */}
+             
               <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
                 <a
                   className={
@@ -511,20 +493,7 @@ const Product = () => {
                       )}
                     </div>
                   </div>
-                  {/* <div className={openTab === 2 ? "flex" : "hidden"} id="link2">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>KÍCH THƯỚC</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>M, L, S, XL, XXL</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div> */}
+                  
                   <div
                     className={openTab === 3 ? "block" : "hidden"}
                     id="link3"

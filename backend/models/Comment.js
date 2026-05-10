@@ -2,13 +2,27 @@ import mongoose from "mongoose";
 
 const CommentSchema = new mongoose.Schema(
   {
+    productName: {
+      type: String,
+      default: "",
+    },
     userId: {
       type: String,
       required: true,
     },
-    userName: {
+    createdById: {
       type: String,
-      required: true,
+      default: "",
+    },
+    createdByName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    createdByImg: {
+      type: String,
+      default: "",
+      trim: true,
     },
     productId: {
       type: String,
@@ -19,10 +33,21 @@ const CommentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     rating: {
       type: Number,
       required: true,
       min: 1,
+      max: 5,
+    },
+    score: {
+      type: Number,
+      default: 0,
+      min: 0,
       max: 5,
     },
   },

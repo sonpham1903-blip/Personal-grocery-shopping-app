@@ -2,8 +2,6 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect, Suspense } from "react";
 import Home from "./pages/user/Home";
-import AdminHome from "./pages/shop/Home";
-import AdminLogin from "./pages/shop/Login";
 import Products from "./pages/user/Products";
 import Product from "./pages/user/Product";
 import Cart from "./pages/user/Cart";
@@ -32,8 +30,6 @@ function App() {
           <Route path="/notfound" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/notfound" replace />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<AdminHome />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

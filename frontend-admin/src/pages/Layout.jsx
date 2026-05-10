@@ -10,6 +10,9 @@ import {
   Categories,
   Suppliers,
   EditUser,
+  Post,
+  NewPost,
+  EditPost,
 } from "../pages";
 import { useSelector } from "react-redux";
 
@@ -46,6 +49,11 @@ const Layout = () => {
               <Route path=":userId" element={<EditUser />} />
             </Route>
             <Route path="don-hang" element={isAdmin ? <Navigate to="san-pham" replace /> : <Orders />} />
+            <Route path="bai-viet">
+              <Route index element={<Post />} />
+              <Route path="new" element={<NewPost />} />
+              <Route path=":postid/edit" element={<EditPost />} />
+            </Route>
           </Routes>
         </div>
       </div>

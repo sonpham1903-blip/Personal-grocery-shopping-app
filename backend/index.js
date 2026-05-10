@@ -2,13 +2,15 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+// import multer from "multer";
+// import path from "path";
 import categoryRoute from "./routes/category.js";
 import authRoute from "./routes/auth.js";
 import productRoute from "./routes/product.js";
 import orderRoute from "./routes/order.js";
 import userRoute from "./routes/user.js";
 import postRoute from "./routes/post.js";
-import commentRouter from "./routes/comment.js";
+import commentRoute from "./routes/comment.js";
 
 dotenv.config();
 
@@ -27,6 +29,20 @@ app.use(
   })
 );
 
+// Serve static files
+// app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Multer config
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'uploads/posts/');
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + '-' + file.originalname);
+//   }
+// });
+// const upload = multer({ storage });
+
 
 // Routes
 app.use("/categories", categoryRoute);
@@ -35,8 +51,13 @@ app.use("/products", productRoute);
 app.use("/orders", orderRoute);
 app.use("/users", userRoute);
 app.use("/posts", postRoute);
-app.use("/comments", commentRouter);
+app.use("/comments", commentRoute);
 
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  const message = err.message || "Đã xảy ra lỗi máy chủ";
+  res.status(status).json({ status, message });
+});
 
 async function startServer() {
   try {

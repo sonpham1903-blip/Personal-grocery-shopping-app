@@ -14,15 +14,14 @@ const EditPost = () => {
   const [file, setFile] = useState();
   const [url, setUrl] = useState();
   const [type, setType] = useState(true);
-  const [query, setQuery] = useState("");
   const [data, setData] = useState([]);
   const [productId, setProductId] = useState("");
   const { postid } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
-  const keys = ["productName"];
   useEffect(() => {
     const uploadFile = async () => {
+      if (!file) return;
       setUrl("");
       const name = new Date().getTime() + currentUser._id + "_" + file.name;
       const storageRef = ref(
@@ -34,7 +33,10 @@ const EditPost = () => {
       uploadTask.on(
         "state_changed",
         (snapshot) => {},
-        (error) => {},
+        (error) => {
+          console.error("Upload error:", error);
+          toast.error("Lỗi upload ảnh");
+        },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setUrl(downloadURL);
@@ -42,40 +44,73 @@ const EditPost = () => {
         }
       );
     };
-    file && uploadFile();
-  }, [file]);
+    uploadFile();
+  }, [file, currentUser._id]);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await ktsRequest.get(`/posts/${postid}`);
-        setType(res.data.type);
+        const res = await ktsRequest.get(`/posts/${postid}`, {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        });
+        setType(res.data.postType);
         setTitle(res.data.title);
         setValue(res.data.content);
         setUrl(res.data.thumbnail);
         setDescription(res.data.description);
+        setProductId(res.data.productId || "");
       } catch (error) {
         console.log(error);
       }
     };
 
-    fetchData();
-  }, [window.location.pathname]);
-  const search = (data) => {
-    return data.filter((item) =>
-      keys.some((key) => item[key].toLowerCase().includes(query))
-    );
-  };
+    if (currentUser?.token) {
+      fetchData();
+    }
+  }, [window.location.pathname, currentUser?.token]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await ktsRequest.get("/products/my", {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        });
+        console.log("Fetched products:", res.data);
+        setData(res.data);
+      } catch (error) {
+        console.log("Error fetching products:", error);
+      }
+    };
+
+    if (currentUser?.token) {
+      fetchProducts();
+    }
+  }, [currentUser?.token]);
 
   const handleClick = async () => {
-    console.log(value);
+    if (!title.trim()) {
+      toast.error("Tiêu đề bài viết là bắt buộc");
+      return;
+    }
+    if (!value.trim()) {
+      toast.error("Nội dung bài viết là bắt buộc");
+      return;
+    }
+    if (!url) {
+      toast.error("Ảnh bìa bài viết là bắt buộc");
+      return;
+    }
     const postData = {
       postType: type,
-      title,
+      title: title.trim(),
       author: currentUser.displayName || "sale168.com",
-      description,
-      content: value,
+      description: description.trim(),
+      content: value.trim(),
       thumbnail: url,
       status: 0,
+      productId: productId || undefined,
     };
     try {
       const config = {
@@ -89,15 +124,17 @@ const EditPost = () => {
       };
       await ktsRequest(config)
         .then((res) => {
-          toast.success(res.data, {
+          toast.success("Bài viết đã được cập nhật thành công", {
             onClose: () => navigate("/admin/bai-viet"),
           });
         })
-        .catch((er) => toast.error(er));
+        .catch((er) => {
+          console.error(er);
+          toast.error(er.response?.data?.message || "Lỗi khi cập nhật bài viết");
+        });
     } catch (error) {
-      error.response
-        ? toast.error(error.response.data.message)
-        : toast.error("Network Error!");
+      console.error(error);
+      toast.error(error.response?.data?.message || "Lỗi mạng");
     }
   };
   return (
@@ -115,38 +152,40 @@ const EditPost = () => {
           <option>Mô tả sản phẩm</option>
         </select>
       </div>
-      {type && (
+      {!type && (
         <div className="flex w-full items-center mb-2">
           <label htmlFor="product" className="w-1/6 hidden md:block">
             Sản phẩm áp dụng
           </label>
-          <div className="md:w-5/6 w-full relative">
-            <input
-              type="text"
+          <div className="md:w-5/6 w-full">
+            <select
               name="product"
               id="product"
-              className="w-full  rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-              placeholder="Sản phẩm áp dụng"
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            {query.length > 0 && (
-              <div className="absolute top-12 bg-white border border-primary p-3 rounded-md flex flex-col gap-1">
-                {search(data).map((p, i) => {
-                  return (
-                    <div
-                      className="flex gap-1 items-center hover:bg-green-200 cursor-pointer"
-                      key={i}
-                    >
-                      <img src={p.imgs[0]} alt="" className="w-8 h-8" />
-                      <span>{p.productName}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+              className="w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+              onChange={(e) => setProductId(e.target.value)}
+              value={productId}
+            >
+              <option value="">Chọn sản phẩm (tùy chọn)</option>
+              {data.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.productName}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}
+      <div className="flex w-full items-center mb-2">
+        <label className="w-1/6 hidden md:block">
+          Tác giả
+        </label>
+        <input
+          type="text"
+          className="md:w-5/6 w-full rounded border border-gray-300 bg-gray-100 p-2 text-gray-900 sm:text-sm"
+          value={currentUser.displayName || "sale168.com"}
+          disabled
+        />
+      </div>
       <div className="flex w-full items-center mb-2">
         <label htmlFor="title" className="w-1/6 hidden md:block">
           Tiêu đề bài viết

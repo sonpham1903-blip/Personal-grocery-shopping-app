@@ -11,6 +11,7 @@ import orderRoute from "./routes/order.js";
 import userRoute from "./routes/user.js";
 import postRoute from "./routes/post.js";
 import commentRoute from "./routes/comment.js";
+import cartRoute from "./routes/cart.js";
 
 dotenv.config();
 
@@ -52,6 +53,8 @@ app.use("/orders", orderRoute);
 app.use("/users", userRoute);
 app.use("/posts", postRoute);
 app.use("/comments", commentRoute);
+app.use("/carts", cartRoute);
+
 
 app.use((err, req, res, next) => {
   const status = err.status || 500;

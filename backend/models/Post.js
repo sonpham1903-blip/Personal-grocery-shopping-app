@@ -10,8 +10,6 @@ const PostSchema = new mongoose.Schema(
     userName: { type: String, required: true },
     productId: { type: String },
     postType: { type: Boolean, default: true },
-    author: { type: String },
-    description: { type: String },
     status: { type: Number, default: 0 },
   },
   { timestamps: true }

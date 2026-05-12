@@ -31,13 +31,21 @@ const cartSlice = createSlice({
   },
 });
 
-export const { setCart, addLocal, updateQuantityLocal, removeItemLocal, resetCart } = cartSlice.actions;
+export const {
+  setCart,
+  addLocal,
+  updateQuantityLocal,
+  removeItemLocal,
+  resetCart,
+} = cartSlice.actions;
 
 // Thunks
 export const fetchCart = (user) => async (dispatch) => {
   if (!user) return;
+  const userId = user._id || user.id;
+  if (!userId) return;
   try {
-    const res = await ktsRequest.get(`/carts/${user.id}`, {
+    const res = await ktsRequest.get(`/carts/${userId}`, {
       headers: { Authorization: `Bearer ${user.token}` },
     });
     const products = res.data?.products || [];
@@ -47,20 +55,22 @@ export const fetchCart = (user) => async (dispatch) => {
   }
 };
 
-export const addToCartServer = ({ productId, quantity = 1 }, user) => async (dispatch) => {
-  if (!user) return;
-  try {
-    await ktsRequest.post(
-      "/carts/add",
-      { productId, quantity },
-      { headers: { Authorization: `Bearer ${user.token}` } }
-    );
-    // refresh cart
-    dispatch(fetchCart(user));
-  } catch (err) {
-    // ignore
-  }
-};
+export const addToCartServer =
+  ({ productId, quantity = 1 }, user) =>
+  async (dispatch) => {
+    if (!user) return;
+    try {
+      await ktsRequest.post(
+        "/carts/add",
+        { productId, quantity },
+        { headers: { Authorization: `Bearer ${user.token}` } },
+      );
+      // refresh cart
+      dispatch(fetchCart(user));
+    } catch (err) {
+      // ignore
+    }
+  };
 
 export const removeFromCartServer = (productId, user) => async (dispatch) => {
   if (!user) return;
@@ -69,30 +79,36 @@ export const removeFromCartServer = (productId, user) => async (dispatch) => {
       headers: { Authorization: `Bearer ${user.token}` },
       data: { productId },
     });
-    dispatch(removeItemLocal(productId));
+    // refresh from server to keep in sync
+    dispatch(fetchCart(user));
   } catch (err) {
     // ignore
   }
 };
 
-export const updateQuantityServer = (productId, quantity, user) => async (dispatch) => {
-  if (!user) return;
-  try {
-    await ktsRequest.post(
-      "/carts/update",
-      { productId, quantity },
-      { headers: { Authorization: `Bearer ${user.token}` } }
-    );
-    dispatch(updateQuantityLocal({ id: productId, quantity }));
-  } catch (err) {
-    // ignore
-  }
-};
+export const updateQuantityServer =
+  (productId, quantity, user) => async (dispatch) => {
+    if (!user) return;
+    try {
+      await ktsRequest.post(
+        "/carts/update",
+        { productId, quantity },
+        { headers: { Authorization: `Bearer ${user.token}` } },
+      );
+      dispatch(updateQuantityLocal({ id: productId, quantity }));
+    } catch (err) {
+      // ignore
+    }
+  };
 
 export const clearCartServer = (user) => async (dispatch) => {
   if (!user) return;
   try {
-    await ktsRequest.post("/carts/clear", {}, { headers: { Authorization: `Bearer ${user.token}` } });
+    await ktsRequest.post(
+      "/carts/clear",
+      {},
+      { headers: { Authorization: `Bearer ${user.token}` } },
+    );
     dispatch(resetCart());
   } catch (err) {
     // ignore

@@ -1,0 +1,8 @@
+@media (max-width: 800px) and (min-width: 700px){
+    body .advanced-fix .search-new-area {
+	    margin-top: 98px;
+	}
+	body .advanced-fix .close-btn-news {
+	    top: 80px;
+	}
+}

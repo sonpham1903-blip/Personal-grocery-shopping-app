@@ -38,8 +38,6 @@ function App() {
           <Route path="*" element={<Navigate to="/notfound" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<AdminHome />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

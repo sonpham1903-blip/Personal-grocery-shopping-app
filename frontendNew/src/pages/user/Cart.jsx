@@ -42,6 +42,9 @@ const Cart = () => {
       buyerName: currentUser.fullname || currentUser.displayName || currentUser.username || "",
       buyerPhone: currentUser.phone || "",
       toAddress: currentUser.address || "",
+      toCity: currentUser.cityName || "",
+      toDistrict: currentUser.districtName || "",
+      toWard: currentUser.wardName || "",
     }));
     // load server cart via direct request
     (async () => {

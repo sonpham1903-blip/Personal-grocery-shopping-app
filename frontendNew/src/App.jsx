@@ -9,6 +9,7 @@ import PostsDetail from "./pages/user/PostsDetail";
 import Cart from "./pages/user/Cart";
 import Profile from "./pages/user/Profile";
 import Login from "./pages/user/Login";
+import Register from "./pages/user/Register";
 import NotFound from "./pages/user/NotFound";
 import ktsRequest from "../ultis/ktsrequest";
 import { ToastContainer } from "react-toastify";
@@ -36,6 +37,7 @@ function App() {
           <Route path="/notfound" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/notfound" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

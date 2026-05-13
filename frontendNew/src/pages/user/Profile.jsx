@@ -4,7 +4,8 @@ import { toast } from "react-toastify";
 import { Footer, Header, Navbar, Promotion } from "../../components";
 import { vnd } from "../../../ultis/ktsFunc";
 import ktsRequest from "../../../ultis/ktsrequest";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { loginSuccess } from "../../redux/userSlice";
 
 const STATUS_LABEL = {
   0: "Chờ xác nhận",
@@ -16,10 +17,36 @@ const STATUS_LABEL = {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    fullname: "",
+    phone: "",
+    email: "",
+    address: "",
+    cityName: "",
+    districtName: "",
+    wardName: "",
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfileData({
+        fullname: currentUser.fullname || currentUser.displayName || "",
+        phone: currentUser.phone || "",
+        email: currentUser.email || "",
+        address: currentUser.address || "",
+        cityName: currentUser.cityName || "",
+        districtName: currentUser.districtName || "",
+        wardName: currentUser.wardName || "",
+      });
+    }
+  }, [currentUser]);
 
   const orderStats = useMemo(() => {
     return orders.reduce(
@@ -97,6 +124,37 @@ const Profile = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    try {
+      setIsUpdatingProfile(true);
+      const res = await ktsRequest.put(
+        `/users/${currentUser._id}`,
+        profileData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
+
+      const updatedUser = { ...res.data.data, token: currentUser.token };
+      dispatch(loginSuccess(updatedUser));
+      toast.success(res.data.message || "Cập nhật thông tin thành công");
+      setIsEditing(false);
+    } catch (error) {
+      toast.error(error.response?.data || "Cập nhật thất bại");
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
   if (!currentUser) {
     return null;
   }
@@ -108,26 +166,137 @@ const Profile = () => {
       <Navbar />
       <div className="mx-auto max-w-screen-xl px-3 py-6">
         <div className="mb-6 rounded-lg bg-white p-5 shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-800">Trang cá nhân</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Quản lý thông tin cơ bản và theo dõi đơn hàng của bạn.
-          </p>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded border border-gray-200 bg-gray-50 p-3">
-              <p className="text-xs uppercase text-gray-500">Họ tên</p>
-              <p className="font-semibold text-gray-800">
-                {currentUser.displayName || currentUser.fullname || currentUser.username}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Trang cá nhân</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Quản lý thông tin cơ bản và theo dõi đơn hàng của bạn.
               </p>
             </div>
-            <div className="rounded border border-gray-200 bg-gray-50 p-3">
-              <p className="text-xs uppercase text-gray-500">Số điện thoại</p>
-              <p className="font-semibold text-gray-800">{currentUser.phone || "Chưa cập nhật"}</p>
-            </div>
-            <div className="rounded border border-gray-200 bg-gray-50 p-3">
-              <p className="text-xs uppercase text-gray-500">Email</p>
-              <p className="font-semibold text-gray-800">{currentUser.email || "Chưa cập nhật"}</p>
-            </div>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Chỉnh sửa thông tin
+              </button>
+            )}
           </div>
+
+          {isEditing ? (
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">Họ tên</span>
+                  <input
+                    name="fullname"
+                    value={profileData.fullname}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                    placeholder="Nguyễn Văn A"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">Số điện thoại</span>
+                  <input
+                    name="phone"
+                    value={profileData.phone}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                    placeholder="09xxxxxxxx"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">Email</span>
+                  <input
+                    name="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                    placeholder="email@example.com"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">Tỉnh / Thành phố</span>
+                  <input
+                    name="cityName"
+                    value={profileData.cityName}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">Quận / Huyện</span>
+                  <input
+                    name="districtName"
+                    value={profileData.districtName}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">Phường / Xã</span>
+                  <input
+                    name="wardName"
+                    value={profileData.wardName}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                  />
+                </label>
+                <label className="space-y-1 md:col-span-2">
+                  <span className="text-sm font-medium text-gray-700">Địa chỉ chi tiết</span>
+                  <input
+                    name="address"
+                    value={profileData.address}
+                    onChange={handleInputChange}
+                    className="w-full rounded border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+                  />
+                </label>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingProfile}
+                  className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  {isUpdatingProfile ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase text-gray-500">Họ tên</p>
+                <p className="font-semibold text-gray-800">
+                  {currentUser.fullname || currentUser.displayName || currentUser.username}
+                </p>
+              </div>
+              <div className="rounded border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase text-gray-500">Số điện thoại</p>
+                <p className="font-semibold text-gray-800">{currentUser.phone || "Chưa cập nhật"}</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase text-gray-500">Email</p>
+                <p className="font-semibold text-gray-800">{currentUser.email || "Chưa cập nhật"}</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-gray-50 p-3 md:col-span-3">
+                <p className="text-xs uppercase text-gray-500">Địa chỉ giao hàng mặc định</p>
+                <p className="font-semibold text-gray-800">
+                  {currentUser.address
+                    ? `${currentUser.address}${currentUser.wardName ? `, ${currentUser.wardName}` : ""}${currentUser.districtName ? `, ${currentUser.districtName}` : ""}${currentUser.cityName ? `, ${currentUser.cityName}` : ""}`
+                    : "Chưa cập nhật địa chỉ"}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mb-6 grid gap-3 md:grid-cols-3">
@@ -150,7 +319,7 @@ const Profile = () => {
             <h2 className="text-lg font-semibold text-gray-800">Đơn hàng của bạn</h2>
             <Link
               to="/products"
-              className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white"
+              className="rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Mua thêm sản phẩm
             </Link>

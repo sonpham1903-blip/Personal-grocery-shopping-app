@@ -4,7 +4,7 @@ import logo from "../assets/imgs/logo_v4.png";
 import empty from "../assets/imgs/no-cart.png";
 import { useDispatch, useSelector } from "react-redux";
 import { vnd } from "../../ultis/ktsFunc";
-import { removeItem, resetCart } from "../redux/cartReducer";
+import { setCart, removeItemLocal } from "../redux/cartReducer";
 import Sidebar from "./Sidebar";
 import { logout } from "../redux/userSlice";
 import { setMsg } from "../redux/msgSlice";
@@ -14,6 +14,7 @@ const Cart = (props) => {
   const show = window.location.pathname === "/cart" ? false : true;
   let subtotal1 = 0;
   const dispatch = useDispatch();
+  const { currentUser } = useSelector((state) => state.user);
   return (
     show && (
       <div
@@ -27,7 +28,20 @@ const Cart = (props) => {
                 <div className="pb-3 flex justify-end items-center">
                   <button
                     className="block border border-primary px-3 py-1 rounded hover:bg-primary hover:text-white"
-                    onClick={() => dispatch(resetCart())}
+                    onClick={() => {
+                      if (!currentUser) {
+                        dispatch(setCart([]));
+                        return;
+                      }
+                      (async () => {
+                        try {
+                          await ktsRequest.post("/carts/clear", {}, { headers: { Authorization: `Bearer ${currentUser.token}` } });
+                          dispatch(setCart([]));
+                        } catch (err) {
+                          // ignore
+                        }
+                      })();
+                    }}
                   >
                     xóa giỏ hàng
                   </button>
@@ -51,7 +65,23 @@ const Cart = (props) => {
                       <div className="text-center w-1/5">
                         <button
                           className="bg-white p-2 rounded-full hover:bg-primary hover:text-white"
-                          onClick={() => dispatch(removeItem(i.id))}
+                          onClick={() => {
+                            if (!currentUser) {
+                              dispatch(removeItemLocal(i.id));
+                              return;
+                            }
+                            (async () => {
+                              try {
+                                await ktsRequest.delete("/carts/remove", {
+                                  headers: { Authorization: `Bearer ${currentUser.token}` },
+                                  data: { productId: i.id },
+                                });
+                                dispatch(removeItemLocal(i.id));
+                              } catch (err) {
+                                // ignore
+                              }
+                            })();
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

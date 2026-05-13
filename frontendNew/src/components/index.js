@@ -17,4 +17,4 @@ export { default as Comment } from "./Comment";
 export { default as Modal } from "./Modal";
 export { default as OrderCard } from "./OrderCard";
 export { default as MidBanner } from "./MidBanner";
-export { default as News1 } from "./News1";
+export { default as Post } from "./Post";

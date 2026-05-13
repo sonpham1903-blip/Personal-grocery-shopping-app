@@ -16,7 +16,7 @@ const MidBanner = () => {
         className="max-w-screen-xl mx-auto text-center mt-3  bg-green-200 w-full overflow-hidden flex text-xs md:text-base gap-2 justify-around relative"
       >
         <SwiperSlide className="">
-          <Link to="/news/65ec18afa3aa6d6523034444">
+          <Link to="/posts/65ec18afa3aa6d6523034444">
             <img
               src={bn5}
               alt=""
@@ -25,7 +25,7 @@ const MidBanner = () => {
           </Link>
         </SwiperSlide>
         <SwiperSlide className="">
-          <Link to="/news/65ec1e1ea3aa6d65230344ae">
+          <Link to="/posts/65ec1e1ea3aa6d65230344ae">
             <img
               src={bn6}
               alt=""

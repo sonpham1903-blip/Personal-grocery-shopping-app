@@ -9,7 +9,7 @@ import {
   Lastest,
   Sidebar,
   MidBanner,
-  News1,
+  Post,
 } from "../../components";
 import raucuqua from "../../assets/imgs/banner_prduct3.webp";
 import thitca from "../../assets/imgs/banner_prduct2.webp";
@@ -52,7 +52,7 @@ const Home = () => {
           />
         ))}
       </div>
-      <News1/>
+      <Post />
       {/* <Footer /> */}
     </div>
   );

@@ -115,12 +115,12 @@ const Footer = () => {
             <h3 className="uppercase font-semibold text-xl">Chính sách</h3>
             <ul className="flex flex-col gap-1">
               <li>
-                <Link to="/news/640ffb8df73dc135c1d7d1e5">
+                <Link to="/posts/640ffb8df73dc135c1d7d1e5">
                   Hướng dẫn đăng ký
                 </Link>
               </li>
               <li>
-                <Link to="/news/640ff760f73dc135c1d7d1d6">
+                <Link to="/posts/640ff760f73dc135c1d7d1d6">
                   {" "}
                   Bảo mật thông tin cá nhân
                 </Link>
@@ -129,7 +129,7 @@ const Footer = () => {
                 <Link href="#">Quy chế hoạt động</Link>
               </li>
               <li>
-                <Link to="/news/640ff9e3f73dc135c1d7d1df">
+                <Link to="/posts/640ff9e3f73dc135c1d7d1df">
                   {" "}
                   Quy trình giải quyết khiếu nại
                 </Link>
@@ -143,7 +143,10 @@ const Footer = () => {
             <ul className="flex flex-col gap-1">
               <li>Các câu hỏi thường gặp</li>
               <li>
-                <a href="/news/640ffc63f73dc135c1d7d1ed"> Hướng dẫn đặt hàng</a>
+                <a href="/posts/640ffc63f73dc135c1d7d1ed">
+                  {" "}
+                  Hướng dẫn đặt hàng
+                </a>
               </li>
               <li>Phương thức vận chuyển</li>
               {/* <li className="flex justify-center">

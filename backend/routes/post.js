@@ -1,28 +1,22 @@
 import express from "express";
 import {
-  adminGetPosts,
   createPost,
+  updatePost,
   deletePost,
-  editPost,
-  getPost,
-  getPostByProductId,
-  getPosts,
+  getPostById,
+  getPostsByUserId,
+  getAllPosts,
+  getPostsByRole,
 } from "../controllers/post.js";
 import { verifyToken } from "../verifyToken.js";
+
 const router = express.Router();
-//lấy toàn bộ bài viết
-router.get("/", getPosts);
-//
-router.get("/admin",verifyToken,adminGetPosts)
-//lấy bài viết cụ thể theo id
-router.get("/:id", getPost);
-//lấy bài viết theo id sản phẩm
-router.get("/product", getPostByProductId);
-//tạo mới bài viết
 router.post("/", verifyToken, createPost);
-//cập nhật bài viết
-router.put("/:id", verifyToken, editPost);
-//xóa bài viết
+router.put("/:id", verifyToken, updatePost);
 router.delete("/:id", verifyToken, deletePost);
+router.get("/admin", verifyToken, getPostsByRole);
+router.get("/user/:userId", verifyToken, getPostsByUserId);
+router.get("/:id", getPostById);
+router.get("/", getAllPosts);
 
 export default router;

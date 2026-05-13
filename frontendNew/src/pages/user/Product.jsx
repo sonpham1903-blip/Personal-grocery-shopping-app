@@ -12,7 +12,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ktsRequest from "../../../ultis/ktsrequest";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../../redux/cartReducer";
+
 const Product = () => {
   const { products } = useSelector((state) => state.cart);
   const { currentUser } = useSelector((state) => state.user);
@@ -76,7 +76,28 @@ const Product = () => {
       img: product.imgs[0],
       quantity,
     };
-    dispatch(addToCart(data));
+    // persist to server-side cart when user is logged in
+    (async () => {
+      try {
+        if (currentUser) {
+          const userId = currentUser._id || currentUser.id;
+          await ktsRequest.post(
+            "/carts/add",
+            { productId: productId, quantity },
+            { headers: { Authorization: `Bearer ${currentUser.token}` } }
+          );
+          const res = await ktsRequest.get(`/carts/${userId}`, {
+            headers: { Authorization: `Bearer ${currentUser.token}` },
+          });
+          dispatch(setCart(res.data?.products || []));
+        } else {
+          // anonymous: update local store
+          dispatch(addLocal({ id: productId, productName: product.productName, currentPrice: product.currentPrice, shopID: product.shopID, shopName: product.shopName || "Sale168.vn", img: product.imgs?.[0] || "", quantity }));
+        }
+      } catch (err) {
+        // ignore network errors here
+      }
+    })();
     toast.success("Đã thêm vào giỏ hàng", { autoClose: 500 });
     type ? "" : navigate("/cart");
   };
@@ -505,7 +526,6 @@ const Product = () => {
                       userName={
                         currentUser?.displayName || currentUser?.username
                       }
-                      userImg={currentUser?.img}
                     />
                   </div>
                 </div>

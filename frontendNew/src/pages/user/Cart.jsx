@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { Footer, Header, Navbar, Promotion } from "../../components";
 import { vnd } from "../../../ultis/ktsFunc";
 import ktsRequest from "../../../ultis/ktsrequest";
-import { removeItem, resetCart, updateQuantity } from "../../redux/cartReducer";
+import { setCart, resetCart, updateQuantityLocal, removeItemLocal } from "../../redux/cartReducer";
 
 const shippingOptions = [
   { value: "ems", label: "EMS VIETNAM (Chuyển phát nhanh)" },
@@ -35,6 +35,7 @@ const Cart = () => {
     if (!currentUser) {
       return;
     }
+    const userId = currentUser._id || currentUser.id;
 
     setFormData((prev) => ({
       ...prev,
@@ -42,6 +43,19 @@ const Cart = () => {
       buyerPhone: currentUser.phone || "",
       toAddress: currentUser.address || "",
     }));
+    // load server cart via direct request
+    (async () => {
+      try {
+        const res = await ktsRequest.get(`/carts/${userId}`, {
+          headers: { Authorization: `Bearer ${currentUser.token}` },
+        });
+        // log res.data for debugging
+        console.log("Cart data from server:", res.data);
+        dispatch(setCart(res.data?.products || []));
+      } catch (err) {
+        // ignore
+      }
+    })();
   }, [currentUser]);
 
   const total = useMemo(() => {
@@ -114,6 +128,12 @@ const Cart = () => {
       });
 
       toast.success(res.data?.message || "Tạo đơn hàng thành công");
+      // clear server cart and local state via direct request
+      try {
+        await ktsRequest.post("/carts/clear", {}, { headers: { Authorization: `Bearer ${currentUser.token}` } });
+      } catch (err) {
+        // ignore
+      }
       dispatch(resetCart());
       navigate("/products");
     } catch (error) {
@@ -124,7 +144,22 @@ const Cart = () => {
   };
 
   const handleQuantityChange = (id, quantity) => {
-    dispatch(updateQuantity({ id, quantity }));
+    if (!currentUser) {
+      dispatch(updateQuantityLocal({ id, quantity }));
+      return;
+    }
+    (async () => {
+      try {
+        await ktsRequest.post(
+          "/carts/update",
+          { productId: id, quantity },
+          { headers: { Authorization: `Bearer ${currentUser.token}` } }
+        );
+        dispatch(updateQuantityLocal({ id, quantity }));
+      } catch (err) {
+        // ignore
+      }
+    })();
   };
 
   return (
@@ -286,7 +321,20 @@ const Cart = () => {
                   <button
                     type="button"
                     className="text-sm font-medium text-red-600 hover:underline"
-                    onClick={() => dispatch(resetCart())}
+                    onClick={() => {
+                      if (!currentUser) {
+                        dispatch(resetCart());
+                        return;
+                      }
+                      (async () => {
+                        try {
+                          await ktsRequest.post("/carts/clear", {}, { headers: { Authorization: `Bearer ${currentUser.token}` } });
+                          dispatch(resetCart());
+                        } catch (err) {
+                          // ignore
+                        }
+                      })();
+                    }}
                   >
                     Xóa tất cả
                   </button>
@@ -334,7 +382,23 @@ const Cart = () => {
                       <button
                         type="button"
                         className="text-sm font-medium text-red-600 hover:underline md:pl-3"
-                        onClick={() => dispatch(removeItem(item.id))}
+                        onClick={() => {
+                          if (!currentUser) {
+                            dispatch(removeItemLocal(item.id));
+                            return;
+                          }
+                          (async () => {
+                            try {
+                              await ktsRequest.delete("/carts/remove", {
+                                headers: { Authorization: `Bearer ${currentUser.token}` },
+                                data: { productId: item.id },
+                              });
+                              dispatch(removeItemLocal(item.id));
+                            } catch (err) {
+                              // ignore
+                            }
+                          })();
+                        }}
                       >
                         Xóa
                       </button>

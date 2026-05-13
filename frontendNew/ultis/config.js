@@ -3,7 +3,7 @@ export const ktsConfig = {
     { title: "trang chủ", path: "/" },
     { title: "giới thiệu", path: "/about" },
     { title: "sản phẩm", path: "/products" },
-    { title: "tin tức", path: "/news" },
+    { title: "tin tức", path: "/posts" },
     { title: "liên hệ", path: "/contact" },
   ],
   categories: [

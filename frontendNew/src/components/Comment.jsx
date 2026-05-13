@@ -27,17 +27,17 @@ const CommentCard = ({ data }) => {
           className="w-16 h-16 min-w-1/4 rounded-full "
         />
       ) : (
-        <div>{textAvatar(data.createdByName)}</div>
+        <div>{textAvatar(data.userName || data.createdByName || "?")}</div>
       )}
       <div className="pl-4 w-3/4 flex-1">
-        <div className="font-semibold">{data.createdByName}</div>
+        <div className="font-semibold">{data.userName || data.createdByName}</div>
         <div className=" flex gap-1">
           {[1, 2, 3, 4, 5].map((s) => {
             return (
               <svg
                 key={s}
                 xmlns="http://www.w3.org/2000/svg"
-                fill={s <= data.score ? "green" : "none"}
+                fill={s <= (data.rating ?? data.score) ? "green" : "none"}
                 viewBox="0 0 24 24"
                 strokeWidth={1}
                 stroke="green"
@@ -58,14 +58,14 @@ const CommentCard = ({ data }) => {
             new Date(data.createdAt).toLocaleDateString()}
         </div>
         <div>
-          <p>{data.description}</p>
+          <p>{data.content || data.description}</p>
         </div>
       </div>
     </div>
   );
 };
 
-const Comment = ({ productId, productName, userId, userName, userImg }) => {
+const Comment = ({ productId, productName, userId, userName }) => {
   const { currentUser } = useSelector((state) => state.user);
   const [data, setData] = useState([]);
   const [refresh, setRefresh] = useState(false);
@@ -78,9 +78,10 @@ const Comment = ({ productId, productName, userId, userName, userImg }) => {
     socket.current.on("newComment", (data) => {
       data === productId && setRefresh(true);
     });
-  }, []);
-  useEffect(() => {
     socket.current.emit("newGuest");
+    return () => {
+      socket.current.disconnect();
+    };
   }, []);
   useEffect(() => {
     setRefresh(false);
@@ -108,16 +109,14 @@ const Comment = ({ productId, productName, userId, userName, userImg }) => {
       return;
     }
     try {
-      const res = await ktsRequest.post(
+      await ktsRequest.post(
         "/comments",
         {
           productId,
-          productName,
-          score,
-          description: desc,
-          createdById: userId,
-          createdByName: userName,
-          createdByImg: userImg,
+          userId: userId,
+          userName: userName,
+          content: desc,
+          rating: score,
         },
         {
           headers: {
@@ -126,8 +125,7 @@ const Comment = ({ productId, productName, userId, userName, userImg }) => {
           },
         }
       );
-      toast.success(res.data);
-      socket.current.emit("addComment", productId);
+      toast.success("Bình luận đã được gửi");
       setRefresh(true);
       setDesc("");
       setScore(0);

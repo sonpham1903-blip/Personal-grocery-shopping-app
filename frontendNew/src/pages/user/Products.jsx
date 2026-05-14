@@ -11,12 +11,13 @@ const products = () => {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
-    const query = searchParams.get("q") || "";
+    const query = (searchParams.get("q") || "").trim();
     const fetchData = async () => {
       try {
-        const res = await ktsRequest.get(
-          `/products?search=${encodeURIComponent(query)}`
-        );
+        const url = query
+          ? `/products?search=${encodeURIComponent(query)}`
+          : "/products";
+        const res = await ktsRequest.get(url);
         setData(res.data);
         setLoading(false);
       } catch (err) {

@@ -8,7 +8,6 @@ import { setCart, removeItemLocal } from "../redux/cartReducer";
 import Sidebar from "./Sidebar";
 import { logout } from "../redux/userSlice";
 import { setMsg } from "../redux/msgSlice";
-import { useEffect } from "react";
 import ktsRequest from "../../ultis/ktsrequest";
 const Cart = (props) => {
   const show = window.location.pathname === "/cart" ? false : true;
@@ -35,7 +34,15 @@ const Cart = (props) => {
                       }
                       (async () => {
                         try {
-                          await ktsRequest.post("/carts/clear", {}, { headers: { Authorization: `Bearer ${currentUser.token}` } });
+                          await ktsRequest.post(
+                            "/carts/clear",
+                            {},
+                            {
+                              headers: {
+                                Authorization: `Bearer ${currentUser.token}`,
+                              },
+                            },
+                          );
                           dispatch(setCart([]));
                         } catch (err) {
                           // ignore
@@ -73,7 +80,9 @@ const Cart = (props) => {
                             (async () => {
                               try {
                                 await ktsRequest.delete("/carts/remove", {
-                                  headers: { Authorization: `Bearer ${currentUser.token}` },
+                                  headers: {
+                                    Authorization: `Bearer ${currentUser.token}`,
+                                  },
                                   data: { productId: i.id },
                                 });
                                 dispatch(removeItemLocal(i.id));
@@ -136,7 +145,6 @@ const Header = () => {
   const [toggle, setToggle] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const [query, setQuery] = useState("");
-  const [data, setData] = useState([]);
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -164,14 +172,13 @@ const Header = () => {
       );
     }
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      setData([]);
-      const res = await ktsRequest.post(`/products/search?q=${query}`);
-      setData(res.data);
-    };
-    if (query.length > 2) fetchData();
-  }, [query]);
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const keyword = query.trim();
+    navigate(
+      keyword ? `/products?q=${encodeURIComponent(keyword)}` : "/products",
+    );
+  };
   return (
     <div className="max-w-screen-xl mx-auto text-center flex items-center justify-between py-3 gap-2 px-3 md:px-0">
       {toggle && <Sidebar open={toggle} close={setToggle} />}
@@ -199,7 +206,10 @@ const Header = () => {
       </button>
 
       <div className="w-1/2 ">
-        <div className="flex md:flex-1 w-3/4 justify-start md:justify-center relative mx-auto">
+        <form
+          className="flex md:flex-1 w-3/4 justify-start md:justify-center relative mx-auto"
+          onSubmit={handleSearch}
+        >
           <input
             type="text"
             placeholder="Tìm kiếm ..."
@@ -221,42 +231,7 @@ const Header = () => {
               d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
             />
           </svg>
-          {query.length > 0 && data && (
-            <div
-              className={`absolute top-12 z-10 bg-gray-100 w-full text-start ${
-                data?.length > 0 ? "border" : ""
-              } border-primary rounded z-20 `}
-            >
-              <div className="text-end px-1.5 py-3 bg-primary">
-                <Link to="/products" className="italic hover:text-white">
-                  Xem tất cả
-                </Link>
-              </div>
-              <div className="max-w-60 overflow-y-auto divide-y divide-dashed divide-primary">
-                {data.map((p, i) => {
-                  return (
-                    <Link
-                      to={`/products/${p._id}`}
-                      key={i}
-                      className="flex p-1.5 items-center hover:bg-green-100"
-                      onClick={() => {
-                        setData([]);
-                        setQuery("");
-                      }}
-                    >
-                      <img
-                        src={p.imgs[0]}
-                        alt=""
-                        className="w-12 h-12 object-cover object-center rounded-full"
-                      />
-                      <span className="pl-1 normal-case">{p.productName}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+        </form>
       </div>
 
       <div className="flex items-center gap-4">

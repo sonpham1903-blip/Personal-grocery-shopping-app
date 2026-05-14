@@ -9,7 +9,6 @@ import {
   EditProduct,
   Categories,
   Suppliers,
-  EditUser,
   Post,
   NewPost,
   EditPost,
@@ -44,10 +43,6 @@ const Layout = () => {
               path="nha-cung-cap"
               element={isAdmin ? <Suppliers /> : <Navigate to="/admin" replace />}
             />
-            <Route path="thong-tin-tai-khoan">
-              <Route index element={<EditUser />} />
-              <Route path=":userId" element={<EditUser />} />
-            </Route>
             <Route path="don-hang" element={isAdmin ? <Navigate to="san-pham" replace /> : <Orders />} />
             <Route path="bai-viet">
               <Route index element={<Post />} />

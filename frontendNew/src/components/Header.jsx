@@ -325,32 +325,41 @@ const Header = () => {
               )}
             </div>
             {openMenu && (
-              <div className="absolute top-12 right-0 z-10 rounded border border-primary bg-white flex flex-col w-48 divide-y divide-dashed divide-primary">
+              <div className="absolute top-12 right-0 z-50 rounded border border-gray-200 bg-white shadow-lg flex flex-col w-48 divide-y divide-gray-100 overflow-hidden">
                 <button
-                  className="hover:bg-primary p-2"
+                  className="px-4 py-3 text-left text-sm text-gray-700 hover:bg-primary hover:text-white flex items-center gap-2 transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
-                    setOpenMenu(!openMenu);
+                    setOpenMenu(false);
                     navigate("/profile");
                   }}
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
                   Trang cá nhân
                 </button>
                 <a
                   href="http://localhost:8990/login"
-                  className="hover:bg-primary p-2"
+                  className="px-4 py-3 text-left text-sm text-gray-700 hover:bg-primary hover:text-white flex items-center gap-2 transition-colors"
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H22.25m-12.917-2.107L10.125 16.5a.75.75 0 01.75-.75h1.125a.75.75 0 01.75.75l.125 2.393a2.25 2.25 0 01-1.077 2.107H9.208a2.25 2.25 0 01-1.077-2.107z" />
+                  </svg>
                   Bạn là người bán
                 </a>
                 <button
-                  className="hover:bg-primary p-2"
+                  className="px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
-                    setOpenMenu(!openMenu);
+                    setOpenMenu(false);
                     dispatch(setMsg(`bye! ${currentUser.displayName}`));
                     dispatch(logout());
                   }}
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                  </svg>
                   Đăng xuất
                 </button>
               </div>

@@ -17,7 +17,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/dichoho_app";
+const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://dorason1903_db_user:71QWZ3Y5uirBZfpQ@cluster0.cm5hwjn.mongodb.net/";
 
 
 // Middleware

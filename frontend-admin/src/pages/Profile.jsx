@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../../ultis/firebase";
 import ktsRequest from "../../ultis/ktsrequest";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { loginSuccess } from "../redux/userSlice";
+import { uploadSingleFile } from "../../ultis/handleFile";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -17,7 +16,7 @@ const Profile = () => {
   const [inputs, setInputs] = useState({});
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -47,28 +46,21 @@ const Profile = () => {
     }
   };
 
-  const uploadImage = (fileToUpload) => {
-    const fileName = new Date().getTime() + "_" + fileToUpload.name;
-    const storageRef = ref(storage, `users/${currentUser._id}/${fileName}`);
-    const uploadTask = uploadBytesResumable(storageRef, fileToUpload);
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      },
-      (error) => {
-        toast.error("Tải ảnh thất bại");
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setInputs(prev => ({ ...prev, img: downloadURL }));
-        setUploadProgress(0);
-        setFile(null);
-        toast.success("Tải ảnh thành công");
-      }
-    );
+  const uploadImage = async (fileToUpload) => {
+    try {
+      setUploadingAvatar(true);
+      const downloadURL = await uploadSingleFile(
+        fileToUpload,
+        `users/${currentUser._id}`,
+      );
+      setInputs((prev) => ({ ...prev, img: downloadURL }));
+      setFile(null);
+      toast.success("Tải ảnh thành công");
+    } catch (error) {
+      toast.error(error.message || "Tải ảnh thất bại");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleUpdateInfo = async (e) => {
@@ -145,9 +137,9 @@ const Profile = () => {
                   </svg>
                   <input type="file" hidden onChange={handleFileUpload} accept="image/*" />
                 </label>
-                {uploadProgress > 0 && (
-                  <div className="absolute -bottom-2 left-0 w-full h-1 bg-gray-200 rounded">
-                    <div className="h-full bg-primary transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                {uploadingAvatar && (
+                  <div className="absolute -bottom-2 left-0 w-full h-1 bg-gray-200 rounded overflow-hidden">
+                    <div className="h-full w-full bg-primary animate-pulse"></div>
                   </div>
                 )}
               </div>

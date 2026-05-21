@@ -8,6 +8,9 @@ export { default as NewProduct } from "./NewProduct";
 export { default as EditProduct } from "./EditProduct";
 export { default as Categories } from "./Categories";
 export { default as Suppliers } from "./Suppliers";
+export { default as EditUser } from "./EditUser";
+export { default as Profile } from "./Profile";
 export { default as Post } from "./Post";
 export { default as NewPost } from "./NewPost";
 export { default as EditPost } from "./EditPost";
+

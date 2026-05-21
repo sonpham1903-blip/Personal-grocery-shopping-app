@@ -63,10 +63,11 @@ export const createOrder = async (req, res, next) => {
         return res.status(404).json("Không tìm thấy sản phẩm trong đơn hàng");
       }
 
-      const availableStock = Math.max((product.inStock || 0) - (product.outStock || 0), 0);
-      if (availableStock < quantity) {
-        return res.status(400).json(`Sản phẩm ${product.productName} không đủ tồn kho`);
-      }
+      // Commented out stock availability check per request
+      // const availableStock = Math.max((product.inStock || 0) - (product.outStock || 0), 0);
+      // if (availableStock < quantity) {
+      //   return res.status(400).json(`Sản phẩm ${product.productName} không đủ tồn kho`);
+      // }
 
       const unitPrice = Number(item.price ?? item.currentPrice ?? product.currentPrice ?? 0);
       const lineTotal = unitPrice * quantity;

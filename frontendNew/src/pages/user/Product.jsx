@@ -26,7 +26,6 @@ const Product = () => {
   const [hotProducts, setHotProducts] = useState([]);
   const [showChat, setShowChat] = useState(false);
   const [checkPrice, setCheckPrice] = useState(false);
-  const [showNotification, setShowNotification] = useState(true);
   const { productId } = useParams();
   const { imgs } = product;
   const relatedDocs = Array.isArray(product?.relatedDocuments)

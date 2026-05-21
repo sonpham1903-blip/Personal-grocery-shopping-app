@@ -1,12 +1,9 @@
-import React from "react";
-import { ktsConfig } from "../../ultis/config";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { useSwiper } from "swiper/react";
-
-const fallbackIconPath =
-  "M320 128a96 96 0 11-192 0 96 96 0 01192 0zM128 256h192c53.02 0 96 42.98 96 96v16a48 48 0 01-48 48H80a48 48 0 01-48-48v-16c0-53.02 42.98-96 96-96z";
+import ktsRequest from "../../ultis/ktsrequest";
 
 const SwiperButton = ({ next = true, children }) => {
   const swiper = useSwiper();
@@ -21,36 +18,50 @@ const SwiperButton = ({ next = true, children }) => {
     </button>
   );
 };
+
 const Category = () => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  console.log("Category component render, categories:", categories, "loading:", loading);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        console.log("Bắt đầu fetch categories...");
+        const res = await ktsRequest.get("/categories");
+        console.log("Response từ API /categories:", res);
+        console.log("Data nhận được:", res.data);
+        setCategories(res.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh mục:", error);
+        console.error("Error details:", error.response?.data || error.message);
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <Swiper
       spaceBetween={0}
       slidesPerView={6}
       className="max-w-screen-2xl mx-auto text-center mt-3 bg-green-200 w-full overflow-hidden flex text-xs md:text-base gap-2 justify-around relative px-10 md:px-12 py-1"
     >
-      {ktsConfig.categories.map((i, index) => {
-        return (
-          <SwiperSlide className="" key={index}>
-            <Link
-              className="p-3 md:p-4 font-semibold hover:bg-green-500 flex gap-2 items-center flex-col w-full"
-              to={`/products?q=${encodeURIComponent(i.name)}`}
-              key={index}
-            >
-              
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                version="1.1"
-                viewBox={i.viewBox || "0 0 24 24"}
-                className="w-6 h-6 md:w-7 md:h-7"
+      {!loading &&
+        categories.map((i, index) => {
+          return (
+            <SwiperSlide className="" key={index}>
+              <Link
+                className="p-3 md:p-4 font-semibold hover:bg-green-500 flex gap-2 items-center flex-col w-full"
+                to={`/products?q=${encodeURIComponent(i.name)}`}
               >
-                <path fill="#000000" d={i.path || fallbackIconPath}></path>
-
-              </svg>
-              <p className="hidden md:block">{i.name}</p>
-            </Link>
-          </SwiperSlide>
-        );
-      })}
+                <p className="text-sm md:text-base">{i.name}</p>
+              </Link>
+            </SwiperSlide>
+          );
+        })}
       <SwiperButton>
         <svg
           xmlns="http://www.w3.org/2000/svg"

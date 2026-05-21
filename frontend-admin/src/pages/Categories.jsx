@@ -19,7 +19,7 @@ const Categories = () => {
     setRefresh(false);
     const fetchData = async () => {
       try {
-        const res = await ktsRequest.get("/categories");
+        const res = await ktsRequest.get("/categories/all");
         setData(res.data);
       } catch (error) {
         console.log(error.response);

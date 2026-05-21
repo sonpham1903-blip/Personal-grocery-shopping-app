@@ -12,7 +12,8 @@ const Sidebar = () => {
   const [open, setOpen] = useState(true);
   const { currentUser } = useSelector((state) => state.user);
   const role = currentUser?.role;
-  const navLinks = role === "admin" ? adminDashboard.navLinks : dashboard.navLinks;
+  const navLinks =
+    role === "admin" ? adminDashboard.navLinks : dashboard.navLinks;
   const activeLink = `flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-white`;
   const normalLink = `flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-sm text-gray-800 hover:text-primary`;
 
@@ -66,13 +67,17 @@ const Sidebar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d={i.d} />
               </svg>
 
-              {open && <span className="whitespace-pre absolute left-20">{i.title}</span>}
+              {open && (
+                <span className="whitespace-pre absolute left-20">
+                  {i.title}
+                </span>
+              )}
             </NavLink>
-          ) : null
+          ) : null,
         )}
-        {role !== "admin" && (
-          <a
-            href={`https://dichoho.top/shop/${currentUser._id}`}
+        {role === "shop" ? (
+          <button
+            onClick={() => navigate("/admin/bai-viet")}
             className="flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-sm text-gray-800 hover:text-primary"
           >
             <svg
@@ -86,28 +91,12 @@ const Sidebar = () => {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z"
+                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h7.5"
               />
             </svg>
-            {open && <span className="whitespace-pre absolute left-20">Gian hàng</span>}
-          </a>
-        )}
-        {role === "admin" || role === "shop" ? (
-          <button
-            onClick={() => navigate("/admin/bai-viet")}
-            className="flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-sm text-gray-800 hover:text-primary"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            {open && <span className="whitespace-pre absolute left-20">Bài viết</span>}
+            {open && (
+              <span className="whitespace-pre absolute left-20">Bài viết</span>
+            )}
           </button>
         ) : null}
         <button
@@ -134,7 +123,9 @@ const Sidebar = () => {
             />
           </svg>
 
-          {open && <span className="whitespace-pre absolute left-20">đăng xuất</span>}
+          {open && (
+            <span className="whitespace-pre absolute left-20">đăng xuất</span>
+          )}
         </button>
       </div>
     </div>

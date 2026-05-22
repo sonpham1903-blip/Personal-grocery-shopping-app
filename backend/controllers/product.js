@@ -20,6 +20,9 @@ const matchesSearchTokens = (source = "", tokens = []) => {
   return tokens.every((token) => sourceTokens.includes(token));
 };
 
+const isSellableProduct = (product) =>
+  Boolean(product?.active) && Number(product?.inStock || 0) > 0;
+
 export const createProduct = async (req, res, next) => {
   try {
     if (!req.body.stockPrice)
@@ -30,6 +33,7 @@ export const createProduct = async (req, res, next) => {
       return res.status(403).json("Hình ảnh sản phẩm không hợp lệ");
     if (!req.user?.id) return res.status(401).json("Bạn chưa đăng nhập");
     const payload = { ...req.body };
+    payload.inStock = Number(payload.inStock ?? 0);
     if (req.user?.role !== "admin") {
       delete payload.active;
     }
@@ -83,7 +87,9 @@ export const getProducts = async (req, res, next) => {
           })
         : products;
 
-    const sortedProducts = matchedProducts.sort(
+    const sellableProducts = matchedProducts.filter(isSellableProduct);
+
+    const sortedProducts = sellableProducts.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
 
@@ -148,22 +154,10 @@ export const updateProduct = async (req, res, next) => {
       const isShopOwner =
         req.user?.role === "shop" && product.shopID === req.user?.id;
       const updateData = { ...req.body };
+      updateData.inStock = Number(updateData.inStock ?? product.inStock ?? 0);
       const triesToChangeActive =
         Object.prototype.hasOwnProperty.call(updateData, "active") &&
         Boolean(updateData.active) !== Boolean(product.active);
-
-      // Chỉ admin mới được phép thay đổi trạng thái bày bán.
-      if (!isAdmin) {
-        if (triesToChangeActive) {
-          return next(
-            createError(
-              403,
-              "Chỉ admin mới được phép thay đổi trạng thái bày bán",
-            ),
-          );
-        }
-        delete updateData.active;
-      }
 
       if (isAdmin || isShopOwner) {
         await Product.findByIdAndUpdate(
@@ -211,7 +205,7 @@ export const deleteProduct = async (req, res, next) => {
 export const getLastest = async (req, res, next) => {
   const limit = req.params.limit || 0;
   try {
-    const products = await Product.find({ active: true });
+    const products = (await Product.find({ active: true })).filter(isSellableProduct);
     const list =
       limit > 0
         ? products.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
@@ -224,7 +218,7 @@ export const getLastest = async (req, res, next) => {
 export const getHostest = async (req, res, next) => {
   const limit = req.params.limit || 0;
   try {
-    const products = await Product.find({ active: true });
+    const products = (await Product.find({ active: true })).filter(isSellableProduct);
     const list =
       limit > 0
         ? products.sort((a, b) => b.outStock - a.outStock).slice(0, limit)

@@ -83,7 +83,6 @@ const ShopDetail = () => {
   };
 
   const shop = shopData.shop;
-
   return (
     <div>
       <Promotion />

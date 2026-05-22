@@ -6,6 +6,7 @@ import { vnd } from "../../ultis/ktsFunc";
 import { toast } from "react-toastify";
 
 const ItemCard = (props) => {
+  const showSoldCount = Boolean(props.showSoldCount);
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [liked, setLiked] = useState(
@@ -105,6 +106,9 @@ const ItemCard = (props) => {
               {vnd(props.data?.stockPrice)}
             </p>
           </div>
+          {showSoldCount && (
+            <p className="text-xs text-gray-500">Đã bán: {props.data?.outStock || 0}</p>
+          )}
         </div>
       </Link>
       <div className="flex justify-end pb-3 pr-3">

@@ -33,7 +33,7 @@ export const createProduct = async (req, res, next) => {
       return res.status(403).json("Hình ảnh sản phẩm không hợp lệ");
     if (!req.user?.id) return res.status(401).json("Bạn chưa đăng nhập");
     const payload = { ...req.body };
-    payload.inStock = Number(payload.inStock ?? 0);
+    delete payload.inStock;
     if (req.user?.role !== "admin") {
       delete payload.active;
     }
@@ -154,7 +154,7 @@ export const updateProduct = async (req, res, next) => {
       const isShopOwner =
         req.user?.role === "shop" && product.shopID === req.user?.id;
       const updateData = { ...req.body };
-      updateData.inStock = Number(updateData.inStock ?? product.inStock ?? 0);
+      delete updateData.inStock;
       const triesToChangeActive =
         Object.prototype.hasOwnProperty.call(updateData, "active") &&
         Boolean(updateData.active) !== Boolean(product.active);

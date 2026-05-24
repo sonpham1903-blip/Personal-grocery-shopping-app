@@ -96,7 +96,6 @@ const NewProduct = () => {
         },
         data: {
           ...inputs,
-          inStock: Number(inputs.inStock ?? 0),
           imgs: imageUrlList,
           relatedDocuments,
           ocopCertImage,
@@ -222,16 +221,9 @@ const NewProduct = () => {
             <label htmlFor="inStock" className="w-1/3 hidden md:block">
               Số lượng tồn kho
             </label>
-            <input
-              type="number"
-              name="inStock"
-              id="inStock"
-              min="0"
-              className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-              placeholder="Số lượng tồn kho ban đầu"
-              pattern="[0-9]*"
-              onChange={handleChange}
-            />
+            <div className="block w-full rounded border border-dashed border-gray-300 bg-gray-50 p-2 text-gray-600 sm:text-sm">
+              Tồn kho sẽ được cộng tự động từ phiếu nhập hàng.
+            </div>
           </div>
           <div className="flex w-full items-center">
             <label htmlFor="description" className="w-1/3 hidden md:block">

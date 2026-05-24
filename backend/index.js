@@ -13,6 +13,12 @@ import postRoute from "./routes/post.js";
 import commentRoute from "./routes/comment.js";
 import cartRoute from "./routes/cart.js";
 import shopRoute from "./routes/shop.js";
+import goodReceiptRoute from "./routes/goodReceipt.js";
+import {
+  processExpiredReceipts,
+  startReceiptExpiryScheduler,
+  syncAllProductStocks,
+} from "./utils/inventory.js";
 
 dotenv.config();
 
@@ -56,7 +62,7 @@ app.use("/posts", postRoute);
 app.use("/comments", commentRoute);
 app.use("/carts", cartRoute);
 app.use("/shops", shopRoute);
-
+app.use("/good-receipts", goodReceiptRoute);
 
 
 app.use((err, req, res, next) => {
@@ -69,6 +75,10 @@ async function startServer() {
   try {
     await mongoose.connect(MONGO_URI);
     console.log("MongoDB connected successfully");
+
+    await processExpiredReceipts();
+    await syncAllProductStocks();
+    startReceiptExpiryScheduler();
 
     app.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);

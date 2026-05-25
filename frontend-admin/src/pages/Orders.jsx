@@ -1,13 +1,22 @@
-import React from "react";
-import { useEffect } from "react";
-import { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ktsRequest from "../../ultis/ktsrequest";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { vnd } from "../../ultis/ktsFunc";
 
+const formatReceiptLabelDate = (value) => {
+  const date = value ? new Date(value) : null;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("vi-VN");
+};
+
 const Orders = () => {
   const [data, setData] = useState([]);
+  const [receipts, setReceipts] = useState([]);
   const [handoverDrafts, setHandoverDrafts] = useState({});
   const { currentUser } = useSelector((state) => state.user);
   const { token } = currentUser;
@@ -39,20 +48,67 @@ const Orders = () => {
     },
     { id: 4, bgColor: "bg-red-300", name: "Đã hủy", textColor: "text-red-700" },
   ];
+
+  const receiptLabelMap = useMemo(() => {
+    const dayCounters = {};
+    const sortedReceipts = [...receipts].sort((left, right) => {
+      const leftTime = new Date(left.importedDate || left.createdAt || 0).getTime();
+      const rightTime = new Date(right.importedDate || right.createdAt || 0).getTime();
+
+      if (leftTime !== rightTime) {
+        return leftTime - rightTime;
+      }
+
+      return new Date(left.createdAt || 0).getTime() - new Date(right.createdAt || 0).getTime();
+    });
+
+    return sortedReceipts.reduce((accumulator, receipt) => {
+      const dayKey = receipt.importedDate
+        ? new Date(receipt.importedDate).toISOString().slice(0, 10)
+        : "unknown";
+
+      dayCounters[dayKey] = (dayCounters[dayKey] || 0) + 1;
+      accumulator[receipt._id] = receipt.name || `${formatReceiptLabelDate(receipt.importedDate)} nhập kho lần ${dayCounters[dayKey]}`;
+      return accumulator;
+    }, {});
+  }, [receipts]);
+
+  const receiptMap = useMemo(() => {
+    return receipts.reduce((accumulator, receipt) => {
+      accumulator[receipt._id] = receipt;
+      return accumulator;
+    }, {});
+  }, [receipts]);
+
   useEffect(() => {
     setRefresh(false);
     const fetchData = async () => {
       try {
-        const res = await ktsRequest.get(
-          "/orders/my-orders",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setData(res.data);
+        const requestConfig = {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const [ordersResult, receiptsResult] = await Promise.allSettled([
+          ktsRequest.get("/orders/my-orders", requestConfig),
+          currentUser?.role === "shop"
+            ? ktsRequest.get(`/good-receipts/shop/${currentUser._id}`)
+            : ktsRequest.get("/good-receipts"),
+        ]);
+
+        if (ordersResult.status === "rejected") {
+          throw ordersResult.reason;
+        }
+
+        setData(ordersResult.value.data || []);
+
+        if (receiptsResult.status === "fulfilled") {
+          setReceipts(receiptsResult.value.data || []);
+        } else {
+          setReceipts([]);
+        }
       } catch (err) {
         err.response
           ? toast.error(err.response.data)
@@ -184,6 +240,39 @@ const Orders = () => {
                                 <p className="text-xs italic text-red-500">
                                   {p.shopName}
                                 </p>
+                                {Array.isArray(p.receiptAllocations) && p.receiptAllocations.length > 0 && (
+                                  <div className="mt-1 space-y-1 rounded bg-gray-50 px-2 py-1 text-[11px] text-gray-600">
+                                    {p.receiptAllocations.map((allocation, allocationIndex) => {
+                                      const receipt = receiptMap[allocation.goodReceiptId];
+                                      const receiptName = receiptLabelMap[allocation.goodReceiptId] || "Phiếu nhập";
+                                      const importedDate = receipt?.importedDate
+                                        ? new Date(receipt.importedDate).toLocaleDateString("vi-VN")
+                                        : "-";
+                                      const expirationDate = receipt?.expirationDate
+                                        ? new Date(receipt.expirationDate).toLocaleDateString("vi-VN")
+                                        : "-";
+
+                                      return (
+                                        <div
+                                          key={`${allocation.goodReceiptId}-${allocationIndex}`}
+                                          className="flex flex-col gap-0.5 rounded border border-gray-100 bg-white px-2 py-1"
+                                        >
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span className="font-medium text-gray-700">
+                                              {receiptName}
+                                            </span>
+                                            <span className="whitespace-nowrap font-semibold text-gray-800">
+                                              x {allocation.quantity}
+                                            </span>
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">
+                                            {`Nhập kho: ${importedDate} | HSD: ${expirationDate}`}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                                 <div className="">
                                   <span>{vnd(p.currentPrice) + " * "}</span>
                                   <span>{p.quantity + " = "}</span>

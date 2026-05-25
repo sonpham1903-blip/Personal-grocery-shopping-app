@@ -5,6 +5,60 @@ import {
   recalculateProductStock,
 } from "../utils/inventory.js";
 
+const formatReceiptDateLabel = (value) => {
+    const date = value instanceof Date ? value : new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+};
+
+const getReceiptDayRange = (value) => {
+    const date = value instanceof Date ? new Date(value) : new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+
+    return { start, end };
+};
+
+const buildGoodReceiptName = async ({ importedDate, shopId, excludeReceiptId }) => {
+    const dayRange = getReceiptDayRange(importedDate);
+
+    if (!dayRange || !shopId) {
+        return "";
+    }
+
+    const query = {
+        shopId,
+        importedDate: {
+            $gte: dayRange.start,
+            $lt: dayRange.end,
+        },
+    };
+
+    if (excludeReceiptId) {
+        query._id = { $ne: excludeReceiptId };
+    }
+
+    const receiptCount = await GoodReceipt.countDocuments(query);
+
+    return `${formatReceiptDateLabel(dayRange.start)} nhập kho lần ${receiptCount + 1}`;
+};
+
 export const createGoodReceipt = async (req, res, next) => {
     try {
         const { productId, quantity, importedDate, expirationDate } = req.body;
@@ -28,11 +82,24 @@ export const createGoodReceipt = async (req, res, next) => {
             return next(createError(400, "Số lượng đã bán không hợp lệ"));
         }
 
+        const nextImportedDate = new Date(importedDate);
+        const nextExpirationDate = new Date(expirationDate);
+
+        if (Number.isNaN(nextImportedDate.getTime()) || Number.isNaN(nextExpirationDate.getTime())) {
+            return next(createError(400, "Ngày nhập hoặc hạn sử dụng không hợp lệ"));
+        }
+
+        const receiptName = await buildGoodReceiptName({
+            importedDate: nextImportedDate,
+            shopId: product.shopID,
+        });
+
         const newGoodReceipt = new GoodReceipt({
+            name: receiptName,
             productId,
             quantity: parsedQuantity,
-            importedDate,
-            expirationDate,
+            importedDate: nextImportedDate,
+            expirationDate: nextExpirationDate,
             soldQuantity: nextSoldQuantity,
             shopId: product.shopID,
         });
@@ -115,6 +182,28 @@ export const updateGoodReceipt = async (req, res, next) => {
             return next(createError(404, "Không tìm thấy thông tin sản phẩm"));
         }
 
+        const nextImportedDateValue = req.body.importedDate ?? currentReceipt.importedDate;
+        const nextExpirationDateValue = req.body.expirationDate ?? currentReceipt.expirationDate;
+        const nextImportedDate = new Date(nextImportedDateValue);
+        const nextExpirationDate = new Date(nextExpirationDateValue);
+
+        if (Number.isNaN(nextImportedDate.getTime()) || Number.isNaN(nextExpirationDate.getTime())) {
+            return next(createError(400, "Ngày nhập hoặc hạn sử dụng không hợp lệ"));
+        }
+
+        const shouldRegenerateName =
+            req.body.importedDate !== undefined ||
+            nextProduct.shopID !== currentReceipt.shopId ||
+            !currentReceipt.name;
+
+        const nextName = shouldRegenerateName
+            ? await buildGoodReceiptName({
+                importedDate: nextImportedDate,
+                shopId: nextProduct.shopID,
+                excludeReceiptId: id,
+            })
+            : currentReceipt.name;
+
         await GoodReceipt.findByIdAndUpdate(
             id,
             {
@@ -123,6 +212,9 @@ export const updateGoodReceipt = async (req, res, next) => {
                 quantity: nextQuantity,
                 soldQuantity: nextSoldQuantity,
                 shopId: nextProduct.shopID,
+                name: nextName,
+                importedDate: nextImportedDate,
+                expirationDate: nextExpirationDate,
             },
             { new: true },
         );

@@ -3,6 +3,10 @@ import mongoose from "mongoose";
 const GoodReceiptSchema = new mongoose.Schema
 (
     {
+        name: {
+            type: String,
+            default: "",
+        },
         productId: {
             type: String,
             required: true,

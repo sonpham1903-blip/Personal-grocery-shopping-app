@@ -25,6 +25,7 @@ export const recalculateProductStock = async (productId) => {
   });
 };
 
+
 export const syncAllProductStocks = async () => {
   const products = await Product.find({}, { _id: 1 });
 

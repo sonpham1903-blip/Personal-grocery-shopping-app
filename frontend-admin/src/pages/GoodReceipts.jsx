@@ -9,6 +9,16 @@ const formatDateInput = (value = new Date()) => {
   return date.toISOString().slice(0, 10);
 };
 
+const formatReceiptLabelDate = (value) => {
+  const date = value ? new Date(value) : null;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("vi-VN");
+};
+
 const GoodReceipts = () => {
   const { currentUser } = useSelector((state) => state.user);
   const { token } = currentUser;
@@ -59,6 +69,30 @@ const GoodReceipts = () => {
       return accumulator;
     }, {});
   }, [products]);
+
+  const receiptLabelMap = useMemo(() => {
+    const dayCounters = {};
+    const sortedReceipts = [...receipts].sort((left, right) => {
+      const leftTime = new Date(left.importedDate || left.createdAt || 0).getTime();
+      const rightTime = new Date(right.importedDate || right.createdAt || 0).getTime();
+
+      if (leftTime !== rightTime) {
+        return leftTime - rightTime;
+      }
+
+      return new Date(left.createdAt || 0).getTime() - new Date(right.createdAt || 0).getTime();
+    });
+
+    return sortedReceipts.reduce((accumulator, receipt) => {
+      const dayKey = receipt.importedDate
+        ? new Date(receipt.importedDate).toISOString().slice(0, 10)
+        : "unknown";
+
+      dayCounters[dayKey] = (dayCounters[dayKey] || 0) + 1;
+      accumulator[receipt._id] = receipt.name || `${formatReceiptLabelDate(receipt.importedDate)} nhập kho lần ${dayCounters[dayKey]}`;
+      return accumulator;
+    }, {});
+  }, [receipts]);
 
   const selectedProduct = productMap[form.productId];
 
@@ -270,6 +304,7 @@ const GoodReceipts = () => {
                 <thead className="bg-gray-50 text-gray-700">
                   <tr>
                     <th className="px-3 py-2">Ngày nhập</th>
+                    <th className="px-3 py-2">Tên phiếu</th>
                     <th className="px-3 py-2">Sản phẩm</th>
                     <th className="px-3 py-2">Số lượng</th>
                     <th className="px-3 py-2">Đã bán</th>
@@ -289,6 +324,7 @@ const GoodReceipts = () => {
                     return (
                       <tr key={receipt._id} className="text-gray-700">
                         <td className="px-3 py-2">{receipt.importedDate ? new Date(receipt.importedDate).toLocaleDateString() : "-"}</td>
+                        <td className="px-3 py-2 font-medium text-gray-900">{receiptLabelMap[receipt._id] || receipt.name || "Phiếu nhập"}</td>
                         <td className="px-3 py-2">
                           <div className="font-medium">{product?.productName || receipt.productId}</div>
                           <div className="text-xs text-gray-500">{product?.cat || receipt.shopId}</div>

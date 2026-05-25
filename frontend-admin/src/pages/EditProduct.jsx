@@ -11,6 +11,9 @@ const EditProduct = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [documentFiles, setDocumentFiles] = useState([]);
   const [ocopCertFile, setOcopCertFile] = useState(null);
+  const [ocopInfo, setOcopInfo] = useState(false);
+  const [ocopCertDate, setOcopCertDate] = useState("");
+  const [ocopStar, setOcopStar] = useState("");
   const [purls, setPurls] = useState([]);
   const [relatedDocUrls, setRelatedDocUrls] = useState([]);
   const [ocopCertUrl, setOcopCertUrl] = useState("");
@@ -45,6 +48,15 @@ const EditProduct = () => {
               : [],
           );
           setOcopCertUrl(res.data.ocopCertImage || "");
+          setOcopInfo(Boolean(res.data.isOcop || res.data.ocopCertImage || res.data.excutionDate));
+          setOcopCertDate(
+            res.data.excutionDate ? new Date(res.data.excutionDate).toISOString().slice(0, 10) : "",
+          );
+          setOcopStar(
+            res.data.star !== undefined && res.data.star !== null
+              ? String(res.data.star)
+              : "",
+          );
           setValue(res.data.description);
           setInputs({
             productName: res.data.productName,
@@ -132,6 +144,17 @@ const EditProduct = () => {
     setOcopCertFile(file);
   };
 
+  const handleOcopToggle = (e) => {
+    const checked = e.target.checked;
+    setOcopInfo(checked);
+
+    if (!checked) {
+      setOcopCertFile(null);
+      setOcopCertDate("");
+      setOcopStar("");
+    }
+  };
+
   const handleClick = async () => {
     if (!inputs.productName) {
       toast.error("Tên sản phẩm không được để trống");
@@ -160,11 +183,10 @@ const EditProduct = () => {
       const relatedDocuments =
         uploadedDocuments.length > 0 ? uploadedDocuments : relatedDocUrls;
 
-      const uploadedOcopCert = await uploadSingleFile(
-        ocopCertFile,
-        "products/ocop-certificates",
-      );
-      const ocopCertImage = uploadedOcopCert || ocopCertUrl;
+      const uploadedOcopCert = ocopInfo
+        ? await uploadSingleFile(ocopCertFile, "products/ocop-certificates")
+        : "";
+      const ocopCertImage = uploadedOcopCert || (ocopInfo ? ocopCertUrl : "");
 
       const config = {
         method: "put",
@@ -178,6 +200,9 @@ const EditProduct = () => {
           imgs: imageUrlList,
           relatedDocuments,
           ocopCertImage,
+          isOcop: ocopInfo,
+          excutionDate: ocopInfo ? ocopCertDate : "",
+          star: ocopInfo && ocopStar !== "" ? Number(ocopStar) : undefined,
           updatedBy: currentUser.username,
           shopName: currentUser.displayName || "Sale168.vn",
           description: value,
@@ -371,21 +396,68 @@ const EditProduct = () => {
               placeholder="Mô tả sản phẩm"
             />
           </div>
-          <div className="flex w-full items-center">
-            <label htmlFor="ocopCertImage" className="w-1/3 hidden md:block">
-              Ảnh chứng nhận OCOP
+          <div className="rounded border border-dashed border-primary/30 bg-primary/5 p-3">
+            <label className="flex items-center gap-3 text-sm font-semibold text-gray-800">
+              <input
+                type="checkbox"
+                checked={ocopInfo}
+                onChange={handleOcopToggle}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              Xác nhận đây là sản phẩm OCOP
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              id="ocopCertImage"
-              className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-              onChange={handleOcopCertChange}
-            />
-            {ocopCertUrl && (
-              <div className="mt-1 text-xs text-gray-600">Đã có ảnh chứng nhận</div>
-            )}
+            <p className="mt-1 text-xs text-gray-500">
+              Bật tùy chọn này để nhập thêm ảnh chứng nhận, ngày cấp và số sao.
+            </p>
           </div>
+          {ocopInfo && (
+            <>
+              <div className="flex w-full items-center">
+                <label htmlFor="ocopCertImage" className="w-1/3 hidden md:block">
+                  Ảnh chứng nhận OCOP
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="ocopCertImage"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  onChange={handleOcopCertChange}
+                />
+                {ocopCertUrl && (
+                  <div className="mt-1 text-xs text-gray-600">Đã có ảnh chứng nhận</div>
+                )}
+              </div>
+              <div className="flex w-full items-center">
+                <label htmlFor="excutionDate" className="w-1/3 hidden md:block">
+                  Ngày cấp
+                </label>
+                <input
+                  type="date"
+                  name="excutionDate"
+                  id="excutionDate"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  value={ocopCertDate}
+                  onChange={(e) => setOcopCertDate(e.target.value)}
+                />
+              </div>
+              <div className="flex w-full items-center">
+                <label htmlFor="star" className="w-1/3 hidden md:block">
+                  Số sao OCOP
+                </label>
+                <input
+                  type="number"
+                  name="star"
+                  id="star"
+                  min="1"
+                  max="5"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  placeholder="1 - 5 sao"
+                  value={ocopStar}
+                  onChange={(e) => setOcopStar(e.target.value)}
+                />
+              </div>
+            </>
+          )}
           <div className="flex w-full items-center">
             <label htmlFor="relatedDocuments" className="w-1/3 hidden md:block">
               Chứng từ liên quan
@@ -409,6 +481,9 @@ const EditProduct = () => {
                 Đã chọn mới {documentFiles.length} file PDF
               </div>
             )}
+            <div className="mt-1 text-xs text-gray-600">
+              Trường này là tùy chọn.
+            </div>
           </div>
           <button
             onClick={handleClick}

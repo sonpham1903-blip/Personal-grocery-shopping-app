@@ -299,6 +299,20 @@ const Products = () => {
                   {selectedProduct.active ? "Đang bật" : "Đang tắt"}
                 </div>
                 <div>
+                  <span className="font-semibold">OCOP: </span>
+                  {selectedProduct.isOcop || selectedProduct.ocopCertImage ? "Có" : "Không"}
+                </div>
+                <div>
+                  <span className="font-semibold">Ngày cấp: </span>
+                  {selectedProduct.excutionDate
+                    ? new Date(selectedProduct.excutionDate).toLocaleDateString()
+                    : "-"}
+                </div>
+                <div>
+                  <span className="font-semibold">Số sao: </span>
+                  {selectedProduct.star || "-"}
+                </div>
+                <div>
                   <span className="font-semibold">Mô tả: </span>
                   {selectedProduct.desc || "-"}
                 </div>

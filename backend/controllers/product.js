@@ -23,6 +23,27 @@ const matchesSearchTokens = (source = "", tokens = []) => {
 const isSellableProduct = (product) =>
   Boolean(product?.active) && Number(product?.inStock || 0) > 0;
 
+const normalizeBoolean = (value) =>
+  value === true || value === "true" || value === 1 || value === "1";
+
+const normalizeProductPayload = (payload = {}) => {
+  const nextPayload = { ...payload };
+  const isOcop = normalizeBoolean(nextPayload.isOcop);
+
+  nextPayload.isOcop = isOcop;
+  nextPayload.relatedDocuments = Array.isArray(nextPayload.relatedDocuments)
+    ? nextPayload.relatedDocuments.filter(Boolean)
+    : [];
+
+  if (!isOcop) {
+    nextPayload.ocopCertImage = "";
+    nextPayload.excutionDate = undefined;
+    nextPayload.star = undefined;
+  }
+
+  return nextPayload;
+};
+
 export const createProduct = async (req, res, next) => {
   try {
     if (!req.body.stockPrice)
@@ -32,7 +53,7 @@ export const createProduct = async (req, res, next) => {
     if (!Array.isArray(req.body?.imgs) || req.body.imgs.length < 1)
       return res.status(403).json("Hình ảnh sản phẩm không hợp lệ");
     if (!req.user?.id) return res.status(401).json("Bạn chưa đăng nhập");
-    const payload = { ...req.body };
+    const payload = normalizeProductPayload(req.body);
     delete payload.inStock;
     if (req.user?.role !== "admin") {
       delete payload.active;
@@ -153,11 +174,8 @@ export const updateProduct = async (req, res, next) => {
       const isAdmin = req.user?.role === "admin";
       const isShopOwner =
         req.user?.role === "shop" && product.shopID === req.user?.id;
-      const updateData = { ...req.body };
+      const updateData = normalizeProductPayload(req.body);
       delete updateData.inStock;
-      const triesToChangeActive =
-        Object.prototype.hasOwnProperty.call(updateData, "active") &&
-        Boolean(updateData.active) !== Boolean(product.active);
 
       if (isAdmin || isShopOwner) {
         await Product.findByIdAndUpdate(

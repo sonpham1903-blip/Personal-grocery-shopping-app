@@ -574,23 +574,40 @@ const Product = () => {
                         dangerouslySetInnerHTML={{ __html: product.description }}
                       ></p>
 
-                      {product?.ocopCertImage && (
-                        <div className="border border-gray-200 rounded-md p-3">
+                      {(product?.isOcop || product?.ocopCertImage) && (
+                        <div className="border border-gray-200 rounded-md p-3 space-y-2">
                           <h4 className="font-semibold text-gray-800 mb-2">
-                            Ảnh chứng nhận OCOP
+                            Thông tin OCOP
                           </h4>
-                          <img
-                            src={product.ocopCertImage}
-                            alt="Chứng nhận OCOP"
-                            className="max-w-full md:max-w-md rounded-md border border-gray-100"
-                          />
+                          <div className="text-sm text-gray-700">
+                            <span className="font-semibold">Số sao: </span>
+                            {product?.star || "-"}
+                          </div>
+                          <div className="text-sm text-gray-700">
+                            <span className="font-semibold">Ngày cấp: </span>
+                            {product?.excutionDate
+                              ? new Date(product.excutionDate).toLocaleDateString()
+                              : "-"}
+                          </div>
+                          {product?.ocopCertImage && (
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2">
+                                Ảnh chứng nhận OCOP
+                              </h4>
+                              <img
+                                src={product.ocopCertImage}
+                                alt="Chứng nhận OCOP"
+                                className="max-w-full md:max-w-md rounded-md border border-gray-100"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {relatedDocs.length > 0 && (
                         <div className="border border-gray-200 rounded-md p-3">
                           <h4 className="font-semibold text-gray-800 mb-2">
-                            Bản công bố sản phẩm
+                            Tài liệu liên quan
                           </h4>
                           <ul className="list-disc ml-5 space-y-1 text-primary">
                             {relatedDocs.map((doc, index) => (

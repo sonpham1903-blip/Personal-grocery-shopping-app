@@ -12,6 +12,9 @@ const NewProduct = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [documentFiles, setDocumentFiles] = useState([]);
   const [ocopCertFile, setOcopCertFile] = useState(null);
+  const [ocopInfo, setOcopInfo] = useState(false);
+  const [ocopCertDate, setOcopCertDate] = useState("");
+  const [ocopStar, setOcopStar] = useState("");
   const [cats, setCats] = useState([]);
   const [inputs, setInputs] = useState({});
   const [value, setValue] = useState("");
@@ -69,6 +72,17 @@ const NewProduct = () => {
     setOcopCertFile(file);
   };
 
+  const handleOcopToggle = (e) => {
+    const checked = e.target.checked;
+    setOcopInfo(checked);
+
+    if (!checked) {
+      setOcopCertFile(null);
+      setOcopCertDate("");
+      setOcopStar("");
+    }
+  };
+
   const handleClick = async () => {
     if (imageFiles.length < 1) {
       toast.error("Hình ảnh không được để trống");
@@ -82,10 +96,9 @@ const NewProduct = () => {
         documentFiles,
         "products/documents",
       );
-      const ocopCertImage = await uploadSingleFile(
-        ocopCertFile,
-        "products/ocop-certificates",
-      );
+      const ocopCertImage = ocopInfo
+        ? await uploadSingleFile(ocopCertFile, "products/ocop-certificates")
+        : "";
 
       const config = {
         method: "post",
@@ -99,6 +112,9 @@ const NewProduct = () => {
           imgs: imageUrlList,
           relatedDocuments,
           ocopCertImage,
+          isOcop: ocopInfo,
+          excutionDate: ocopInfo ? ocopCertDate : "",
+          star: ocopInfo && ocopStar !== "" ? Number(ocopStar) : undefined,
           shopID: currentUser._id,
           shopName: currentUser.displayName || "Sale168.vn",
           description: value,
@@ -239,18 +255,65 @@ const NewProduct = () => {
               placeholder="Mô tả sản phẩm"
             />
           </div>
-          <div className="flex w-full items-center">
-            <label htmlFor="ocopCertImage" className="w-1/3 hidden md:block">
-              Ảnh chứng nhận OCOP
+          <div className="rounded border border-dashed border-primary/30 bg-primary/5 p-3">
+            <label className="flex items-center gap-3 text-sm font-semibold text-gray-800">
+              <input
+                type="checkbox"
+                checked={ocopInfo}
+                onChange={handleOcopToggle}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              Xác nhận đây là sản phẩm OCOP
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              id="ocopCertImage"
-              className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-              onChange={handleOcopCertChange}
-            />
+            <p className="mt-1 text-xs text-gray-500">
+              Bật tùy chọn này để nhập thêm ảnh chứng nhận, ngày cấp và số sao.
+            </p>
           </div>
+          {ocopInfo && (
+            <>
+              <div className="flex w-full items-center">
+                <label htmlFor="ocopCertImage" className="w-1/3 hidden md:block">
+                  Ảnh chứng nhận OCOP
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="ocopCertImage"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  onChange={handleOcopCertChange}
+                />
+              </div>
+              <div className="flex w-full items-center">
+                <label htmlFor="excutionDate" className="w-1/3 hidden md:block">
+                  Ngày cấp
+                </label>
+                <input
+                  type="date"
+                  name="excutionDate"
+                  id="excutionDate"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  value={ocopCertDate}
+                  onChange={(e) => setOcopCertDate(e.target.value)}
+                />
+              </div>
+              <div className="flex w-full items-center">
+                <label htmlFor="star" className="w-1/3 hidden md:block">
+                  Số sao OCOP
+                </label>
+                <input
+                  type="number"
+                  name="star"
+                  id="star"
+                  min="1"
+                  max="5"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  placeholder="1 - 5 sao"
+                  value={ocopStar}
+                  onChange={(e) => setOcopStar(e.target.value)}
+                />
+              </div>
+            </>
+          )}
           <div className="flex w-full items-center">
             <div className="w-1/4 hidden md:block">
               <label htmlFor="relatedDocuments">Chứng từ liên quan </label>
@@ -271,7 +334,7 @@ const NewProduct = () => {
                 </div>
               )}
               <div className="mt-1 text-xs text-gray-600">
-                Hỗ trợ định dạng: PDF
+                Hỗ trợ định dạng: PDF, trường này là tùy chọn.
               </div>
             </div>
           </div>

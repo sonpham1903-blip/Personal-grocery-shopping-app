@@ -26,9 +26,9 @@ const Product = () => {
   const [hotProducts, setHotProducts] = useState([]);
   const [showChat, setShowChat] = useState(false);
   const [checkPrice, setCheckPrice] = useState(false);
-  const [showNotification, setShowNotification] = useState(true);
   const { productId } = useParams();
   const { imgs } = product;
+  const remainingStock = Number(product?.inStock || 0);
   const relatedDocs = Array.isArray(product?.relatedDocuments)
     ? product.relatedDocuments
     : typeof product?.relatedDocuments === "string"
@@ -52,6 +52,14 @@ const Product = () => {
     };
     fetchData();
   }, [productId, navigate]);
+
+  useEffect(() => {
+    if (remainingStock > 0) {
+      setQuantity((prev) => Math.min(Math.max(prev, 1), remainingStock));
+    } else {
+      setQuantity(0);
+    }
+  }, [remainingStock]);
 
   useEffect(() => {
     if (!shopId) {
@@ -81,6 +89,16 @@ const Product = () => {
     fetchData();
   }, []);
   const handleClick = (type) => {
+    if (remainingStock <= 0) {
+      toast.warn("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    if (quantity < 1 || quantity > remainingStock) {
+      toast.warn("Số lượng mua không hợp lệ");
+      return;
+    }
+
     // type-true: mua luôn
     // type-false: thêm vào giỏ hàng
     const data = {
@@ -93,7 +111,7 @@ const Product = () => {
       img: product.imgs[0],
       quantity,
     };
-    // persist to server-side cart when user is logged in
+
     (async () => {
       try {
         if (currentUser) {
@@ -101,7 +119,7 @@ const Product = () => {
           await ktsRequest.post(
             "/carts/add",
             { productId: productId, quantity },
-            { headers: { Authorization: `Bearer ${currentUser.token}` } }
+            { headers: { Authorization: `Bearer ${currentUser.token}` } },
           );
           const res = await ktsRequest.get(`/carts/${userId}`, {
             headers: { Authorization: `Bearer ${currentUser.token}` },
@@ -109,12 +127,23 @@ const Product = () => {
           dispatch(setCart(res.data?.products || []));
         } else {
           // anonymous: update local store
-          dispatch(addLocal({ id: productId, productName: product.productName, currentPrice: product.currentPrice, shopID: product.shopID, shopName: product.shopName || "Sale168.vn", img: product.imgs?.[0] || "", quantity }));
+          dispatch(
+            addLocal({
+              id: productId,
+              productName: product.productName,
+              currentPrice: product.currentPrice,
+              shopID: product.shopID,
+              shopName: product.shopName || "Sale168.vn",
+              img: product.imgs?.[0] || "",
+              quantity,
+            }),
+          );
         }
       } catch (err) {
         // ignore network errors here
       }
     })();
+
     toast.success("Đã thêm vào giỏ hàng", { autoClose: 500 });
     type ? "" : navigate("/cart");
   };
@@ -378,35 +407,64 @@ const Product = () => {
                   <div className="flex w-1/2 mx-auto gap-1">
                     <button
                       className="bg-gray-300 px-2.5 hover:bg-gray-500 rounded"
+                      disabled={remainingStock <= 0}
                       onClick={() =>
-                        setQuantity((prev) => (prev > 0 ? prev - 1 : 0))
+                        setQuantity((prev) =>
+                          prev > 1 ? prev - 1 : remainingStock > 0 ? 1 : 0,
+                        )
                       }
                     >
                       -
                     </button>
                     <input
                       type="number"
-                      className="focus:border-primary focus:outline-none focus:ring-primary w-1/4 border border-green-100 text-center"
+                      min={1}
+                      max={remainingStock}
+                      disabled={remainingStock <= 0}
+                      className="focus:border-primary focus:outline-none focus:ring-primary w-1/4 border border-green-100 text-center disabled:bg-gray-100"
                       value={quantity}
-                      onChange={(e) => setQuantity(parseInt(e.target.value))}
+                      onChange={(e) => {
+                        const nextQuantity = Number(e.target.value);
+                        if (Number.isNaN(nextQuantity)) {
+                          setQuantity(remainingStock > 0 ? 1 : 0);
+                          return;
+                        }
+
+                        setQuantity(
+                          Math.min(
+                            Math.max(nextQuantity, 1),
+                            remainingStock || 1,
+                          ),
+                        );
+                      }}
                     />
                     <button
                       className="bg-gray-300 px-2.5 hover:bg-gray-500 rounded"
-                      onClick={() => setQuantity((prev) => prev + 1)}
+                      disabled={remainingStock <= 0}
+                      onClick={() =>
+                        setQuantity((prev) => Math.min(prev + 1, remainingStock))
+                      }
                     >
                       +
                     </button>
                   </div>
                 </div>
+                <div className="text-sm font-medium text-gray-600">
+                  {remainingStock > 0
+                    ? `Còn ${remainingStock} sản phẩm`
+                    : "Sản phẩm đã hết hàng"}
+                </div>
                 <div className="w-full grid grid-cols-2 gap-2">
                   <button
-                    className="p-3 font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                    className="p-3 font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:bg-gray-400 disabled:hover:bg-gray-400"
+                    disabled={remainingStock <= 0}
                     onClick={() => handleClick(true)}
                   >
                     Thêm vào giỏ hàng
                   </button>
                   <button
-                    className="p-3 font-semibold text-white bg-orange-400 rounded-md text-center hover:bg-orange-600"
+                    className="p-3 font-semibold text-white bg-orange-400 rounded-md text-center hover:bg-orange-600 disabled:bg-gray-400 disabled:hover:bg-gray-400"
+                    disabled={remainingStock <= 0}
                     onClick={() => handleClick(false)}
                   >
                     Mua ngay
@@ -516,23 +574,40 @@ const Product = () => {
                         dangerouslySetInnerHTML={{ __html: product.description }}
                       ></p>
 
-                      {product?.ocopCertImage && (
-                        <div className="border border-gray-200 rounded-md p-3">
+                      {(product?.isOcop || product?.ocopCertImage) && (
+                        <div className="border border-gray-200 rounded-md p-3 space-y-2">
                           <h4 className="font-semibold text-gray-800 mb-2">
-                            Ảnh chứng nhận OCOP
+                            Thông tin OCOP
                           </h4>
-                          <img
-                            src={product.ocopCertImage}
-                            alt="Chứng nhận OCOP"
-                            className="max-w-full md:max-w-md rounded-md border border-gray-100"
-                          />
+                          <div className="text-sm text-gray-700">
+                            <span className="font-semibold">Số sao: </span>
+                            {product?.star || "-"}
+                          </div>
+                          <div className="text-sm text-gray-700">
+                            <span className="font-semibold">Ngày cấp: </span>
+                            {product?.excutionDate
+                              ? new Date(product.excutionDate).toLocaleDateString()
+                              : "-"}
+                          </div>
+                          {product?.ocopCertImage && (
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2">
+                                Ảnh chứng nhận OCOP
+                              </h4>
+                              <img
+                                src={product.ocopCertImage}
+                                alt="Chứng nhận OCOP"
+                                className="max-w-full md:max-w-md rounded-md border border-gray-100"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {relatedDocs.length > 0 && (
                         <div className="border border-gray-200 rounded-md p-3">
                           <h4 className="font-semibold text-gray-800 mb-2">
-                            Bản công bố sản phẩm
+                            Tài liệu liên quan
                           </h4>
                           <ul className="list-disc ml-5 space-y-1 text-primary">
                             {relatedDocs.map((doc, index) => (

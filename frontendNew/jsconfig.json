@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "https://localhost:5173/",
     "paths": {
       "@/*": ["src/*"]
     }

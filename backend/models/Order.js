@@ -39,6 +39,24 @@ const OrderProductSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    receiptAllocations: {
+      type: [
+        new mongoose.Schema(
+          {
+            goodReceiptId: {
+              type: String,
+            },
+            quantity: {
+              type: Number,
+              default: 0,
+              min: 0,
+            },
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
   },
   { _id: false }
 );

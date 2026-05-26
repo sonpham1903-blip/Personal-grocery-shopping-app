@@ -2,7 +2,6 @@ import User from "../models/User.js";
 import Product from "../models/Product.js";
 import { createError } from "../error.js";
 
-
 export const getShopDetails = async (req, res, next) => 
 {
     try
@@ -14,7 +13,9 @@ export const getShopDetails = async (req, res, next) =>
         }
         else
         {
-            const products = await Product.find({ shopID: req.params.id }).sort({ createdAt: -1 });
+                        const products = (await Product.find({ shopID: req.params.id }))
+                            .filter((product) => Boolean(product.active) && Number(product.inStock || 0) > 0)
+                            .sort((a, b) => b.createdAt - a.createdAt);
             res.status(200).json({
                 shop,
                 products,

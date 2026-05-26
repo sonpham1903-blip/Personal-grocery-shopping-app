@@ -3,28 +3,24 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ktsRequest from "../../ultis/ktsrequest";
+import { uploadMultipleFiles, uploadSingleFile } from "../../ultis/handleFile";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 const NewProduct = () => {
   const [loading, setLoading] = useState(false);
-  const [imageLinks, setImageLinks] = useState("");
-  const [urls, setUrls] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [documentFiles, setDocumentFiles] = useState([]);
+  const [ocopCertFile, setOcopCertFile] = useState(null);
+  const [ocopInfo, setOcopInfo] = useState(false);
+  const [ocopCertDate, setOcopCertDate] = useState("");
+  const [ocopStar, setOcopStar] = useState("");
   const [cats, setCats] = useState([]);
   const [inputs, setInputs] = useState({});
   const [value, setValue] = useState("");
   const { currentUser } = useSelector((state) => state.user);
   const { token } = currentUser;
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await ktsRequest.get("/categories");
-        setCats(res.data);
-      } catch (error) {
-      }
-    };
-    fetchData();
-  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       const checkRole = currentUser.role === "admin";
@@ -45,24 +41,65 @@ const NewProduct = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [currentUser.role, token]);
+
   const handleChange = (e) => {
     setInputs((prev) => {
       return { ...prev, [e.target.name]: e.target.value };
     });
   };
-  const handleClick = async () => {
-    const imageUrlList = imageLinks
-      .split(/\n|,/)
-      .map((link) => link.trim())
-      .filter((link) => link.length > 0);
 
-    if (imageUrlList.length < 1) {
+  const handleImageChange = (e) => {
+    setImageFiles(Array.from(e.target.files || []));
+  };
+
+  const handleDocumentChange = (e) => {
+    const selected = Array.from(e.target.files || []);
+    const invalid = selected.some((file) => file.type !== "application/pdf");
+
+    if (invalid) {
+      toast.error("Chỉ hỗ trợ file PDF cho chứng từ liên quan");
+      e.target.value = "";
+      setDocumentFiles([]);
+      return;
+    }
+
+    setDocumentFiles(selected);
+  };
+
+  const handleOcopCertChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setOcopCertFile(file);
+  };
+
+  const handleOcopToggle = (e) => {
+    const checked = e.target.checked;
+    setOcopInfo(checked);
+
+    if (!checked) {
+      setOcopCertFile(null);
+      setOcopCertDate("");
+      setOcopStar("");
+    }
+  };
+
+  const handleClick = async () => {
+    if (imageFiles.length < 1) {
       toast.error("Hình ảnh không được để trống");
       return;
     }
+
     setLoading(true);
     try {
+      const imageUrlList = await uploadMultipleFiles(imageFiles, "products/images");
+      const relatedDocuments = await uploadMultipleFiles(
+        documentFiles,
+        "products/documents",
+      );
+      const ocopCertImage = ocopInfo
+        ? await uploadSingleFile(ocopCertFile, "products/ocop-certificates")
+        : "";
+
       const config = {
         method: "post",
         url: "/products",
@@ -73,6 +110,11 @@ const NewProduct = () => {
         data: {
           ...inputs,
           imgs: imageUrlList,
+          relatedDocuments,
+          ocopCertImage,
+          isOcop: ocopInfo,
+          excutionDate: ocopInfo ? ocopCertDate : "",
+          star: ocopInfo && ocopStar !== "" ? Number(ocopStar) : undefined,
           shopID: currentUser._id,
           shopName: currentUser.displayName || "Sale168.vn",
           description: value,
@@ -81,13 +123,13 @@ const NewProduct = () => {
       ktsRequest(config)
         .then((res) => {
           toast.success(res.data);
-          setImageLinks("");
-          setUrls([]);
+          setImageFiles([]);
+          setDocumentFiles([]);
+          setOcopCertFile(null);
         })
         .catch((er) => toast.error(er.response.data));
     } catch (error) {
-      console.log(error.response.data);
-      toast.error(`${error.response ? error.response.data : "Network error!"}`);
+      toast.error(error.message || "Upload file thất bại");
     } finally {
       setLoading(false);
     }
@@ -99,27 +141,21 @@ const NewProduct = () => {
         <div className="space-y-4 md:space-y-6">
           <div className="flex w-full items-center">
             <div className="w-1/4 hidden md:block">
-              <label htmlFor="imageLinks">Ảnh sản phẩm </label>
+              <label htmlFor="productImages">Ảnh sản phẩm </label>
             </div>
             <div className="w-full">
-              <textarea
-                id="imageLinks"
+              <input
+                id="productImages"
+                type="file"
+                accept="image/*"
+                multiple
                 className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-                placeholder="Nhập link ảnh, mỗi link một dòng hoặc cách nhau bởi dấu phẩy"
-                rows={3}
-                value={imageLinks}
-                onChange={(e) => {
-                  setImageLinks(e.target.value);
-                  setUrls(
-                    e.target.value
-                      .split(/\n|,/)
-                      .map((link) => link.trim())
-                      .filter((link) => link.length > 0)
-                  );
-                }}
+                onChange={handleImageChange}
               />
-              {urls.length > 0 && (
-                <div className="mt-2 text-xs text-gray-600">Đã nhập {urls.length} ảnh</div>
+              {imageFiles.length > 0 && (
+                <div className="mt-2 text-xs text-gray-600">
+                  Đã chọn {imageFiles.length} ảnh
+                </div>
               )}
             </div>
           </div>
@@ -145,9 +181,10 @@ const NewProduct = () => {
               id="cat"
               name="cat"
               className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-primary focus:ring-primary"
+              value={inputs.cat || ""}
               onChange={handleChange}
             >
-              <option selected disabled hidden>
+              <option value="" disabled>
                 Chọn danh mục sản phẩm
               </option>
               {cats.map((c, i) => {
@@ -197,6 +234,14 @@ const NewProduct = () => {
             />
           </div>
           <div className="flex w-full items-center">
+            <label htmlFor="inStock" className="w-1/3 hidden md:block">
+              Số lượng tồn kho
+            </label>
+            <div className="block w-full rounded border border-dashed border-gray-300 bg-gray-50 p-2 text-gray-600 sm:text-sm">
+              Tồn kho sẽ được cộng tự động từ phiếu nhập hàng.
+            </div>
+          </div>
+          <div className="flex w-full items-center">
             <label htmlFor="description" className="w-1/3 hidden md:block">
               Mô tả sản phẩm
             </label>
@@ -210,43 +255,86 @@ const NewProduct = () => {
               placeholder="Mô tả sản phẩm"
             />
           </div>
-          <div className="flex w-full items-center">
-            <label htmlFor="ocopCertImage" className="w-1/3 hidden md:block">
-              Ảnh chứng nhận OCOP
+          <div className="rounded border border-dashed border-primary/30 bg-primary/5 p-3">
+            <label className="flex items-center gap-3 text-sm font-semibold text-gray-800">
+              <input
+                type="checkbox"
+                checked={ocopInfo}
+                onChange={handleOcopToggle}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              Xác nhận đây là sản phẩm OCOP
             </label>
-            <input
-              type="text"
-              name="ocopCertImage"
-              id="ocopCertImage"
-              className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-              placeholder="Nhập link ảnh chứng nhận OCOP"
-              onChange={handleChange}
-            />
+            <p className="mt-1 text-xs text-gray-500">
+              Bật tùy chọn này để nhập thêm ảnh chứng nhận, ngày cấp và số sao.
+            </p>
           </div>
+          {ocopInfo && (
+            <>
+              <div className="flex w-full items-center">
+                <label htmlFor="ocopCertImage" className="w-1/3 hidden md:block">
+                  Ảnh chứng nhận OCOP
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="ocopCertImage"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  onChange={handleOcopCertChange}
+                />
+              </div>
+              <div className="flex w-full items-center">
+                <label htmlFor="excutionDate" className="w-1/3 hidden md:block">
+                  Ngày cấp
+                </label>
+                <input
+                  type="date"
+                  name="excutionDate"
+                  id="excutionDate"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  value={ocopCertDate}
+                  onChange={(e) => setOcopCertDate(e.target.value)}
+                />
+              </div>
+              <div className="flex w-full items-center">
+                <label htmlFor="star" className="w-1/3 hidden md:block">
+                  Số sao OCOP
+                </label>
+                <input
+                  type="number"
+                  name="star"
+                  id="star"
+                  min="1"
+                  max="5"
+                  className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+                  placeholder="1 - 5 sao"
+                  value={ocopStar}
+                  onChange={(e) => setOcopStar(e.target.value)}
+                />
+              </div>
+            </>
+          )}
           <div className="flex w-full items-center">
             <div className="w-1/4 hidden md:block">
               <label htmlFor="relatedDocuments">Chứng từ liên quan </label>
             </div>
             <div className="w-full">
-              <textarea
+              <input
                 id="relatedDocuments"
                 name="relatedDocuments"
+                type="file"
+                accept="application/pdf"
+                multiple
                 className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-                placeholder="Nhập link file PDF, mỗi link một dòng hoặc cách nhau bởi dấu phẩy"
-                rows={3}
-                onChange={(e) => {
-                  const docs = e.target.value
-                    .split(/\n|,/)
-                    .map((link) => link.trim())
-                    .filter((link) => link.length > 0);
-                  setInputs((prev) => ({
-                    ...prev,
-                    relatedDocuments: docs,
-                  }));
-                }}
+                onChange={handleDocumentChange}
               />
+              {documentFiles.length > 0 && (
+                <div className="mt-1 text-xs text-gray-600">
+                  Đã chọn {documentFiles.length} file PDF
+                </div>
+              )}
               <div className="mt-1 text-xs text-gray-600">
-                Hỗ trợ định dạng: PDF
+                Hỗ trợ định dạng: PDF, trường này là tùy chọn.
               </div>
             </div>
           </div>

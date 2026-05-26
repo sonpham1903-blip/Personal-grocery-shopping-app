@@ -123,12 +123,16 @@ const Cart = () => {
         })),
       };
 
+      console.log("[Cart] submit order payload:", payload);
+
       const res = await ktsRequest.post("/orders", payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${currentUser.token}`,
         },
       });
+
+      console.log("[Cart] order response:", res.data);
 
       toast.success(res.data?.message || "Tạo đơn hàng thành công");
       // clear server cart and local state via direct request
@@ -140,6 +144,11 @@ const Cart = () => {
       dispatch(resetCart());
       navigate("/products");
     } catch (error) {
+      console.error("[Cart] order submit failed:", {
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+      });
       toast.error(error.response ? error.response.data : "Network Error!");
     } finally {
       setLoading(false);

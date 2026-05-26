@@ -1,6 +1,11 @@
 import { createError } from "../error.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import {
+  allocateReceiptStock,
+  releaseReceiptAllocations,
+  recalculateProductStock,
+} from "../utils/inventory.js";
 const permistion = ["admin", "shipper"];
 const ORDER_STATUS = {
   PENDING_CONFIRMATION: 0,
@@ -29,6 +34,19 @@ const getTrackingDescByStatus = (status) => {
 
 export const createOrder = async (req, res, next) => {
   try {
+    console.log("[orders:create] incoming request", {
+      userId: req.user?.id,
+      role: req.user?.role,
+      body: {
+        ...req.body,
+        products: Array.isArray(req.body?.products) ? req.body.products.map((item) => ({
+          productId: item.id || item.productId,
+          quantity: item.quantity,
+          shopID: item.shopID,
+        })) : [],
+      },
+    });
+
     const rawProducts = Array.isArray(req.body.products) ? req.body.products : [];
 
     if (rawProducts.length === 0) {
@@ -49,10 +67,14 @@ export const createOrder = async (req, res, next) => {
 
     const normalizedProducts = [];
     let total = 0;
+    const allocatedReceiptBatches = [];
+    const updatedProductItems = [];
 
     for (const item of rawProducts) {
       const productId = item.id || item.productId;
       const quantity = Number(item.quantity || 0);
+
+      console.log("[orders:create] validating item", { productId, quantity });
 
       if (!productId || quantity <= 0) {
         return res.status(400).json("Sản phẩm trong giỏ hàng không hợp lệ");
@@ -63,13 +85,32 @@ export const createOrder = async (req, res, next) => {
         return res.status(404).json("Không tìm thấy sản phẩm trong đơn hàng");
       }
 
-      const availableStock = Math.max((product.inStock || 0) - (product.outStock || 0), 0);
+      await recalculateProductStock(productId);
+      const freshProduct = await Product.findById(productId);
+
+      const availableStock = Number(freshProduct?.inStock || 0);
       if (availableStock < quantity) {
-        return res.status(400).json(`Sản phẩm ${product.productName} không đủ tồn kho`);
+        console.warn("[orders:create] insufficient stock", {
+          productId,
+          productName: product.productName,
+          availableStock,
+          requestedQuantity: quantity,
+        });
+        return res
+          .status(400)
+          .json(`Sản phẩm ${product.productName} không đủ tồn kho`);
       }
 
-      const unitPrice = Number(item.price ?? item.currentPrice ?? product.currentPrice ?? 0);
+      const unitPrice = Number(item.price ?? item.currentPrice ?? freshProduct?.currentPrice ?? product.currentPrice ?? 0);
       const lineTotal = unitPrice * quantity;
+      const receiptAllocations = await allocateReceiptStock(product._id.toString(), quantity);
+
+      console.log("[orders:create] FIFO allocations", {
+        productId: product._id.toString(),
+        quantity,
+        receiptAllocations,
+      });
+      allocatedReceiptBatches.push(...receiptAllocations);
 
       normalizedProducts.push({
         productId: product._id.toString(),
@@ -81,6 +122,7 @@ export const createOrder = async (req, res, next) => {
         unitPrice,
         currentPrice: unitPrice,
         lineTotal,
+        receiptAllocations,
       });
 
       total += lineTotal;
@@ -114,19 +156,69 @@ export const createOrder = async (req, res, next) => {
 
     await newOrder.save();
 
-    await Promise.all(
-      normalizedProducts.map(async (item) => {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { outStock: item.quantity },
-        });
-      })
-    );
+    console.log("[orders:create] order draft saved", {
+      orderId: newOrder._id.toString(),
+      orderNumber,
+      products: normalizedProducts.length,
+      total,
+    });
+
+    try {
+      await Promise.all(
+        normalizedProducts.map(async (item) => {
+          await Product.findByIdAndUpdate(item.productId, {
+            $inc: { outStock: item.quantity, inStock: -item.quantity },
+          });
+          updatedProductItems.push(item);
+          console.log("[orders:create] product stock updated", {
+            productId: item.productId,
+            quantity: item.quantity,
+          });
+        }),
+      );
+    } catch (stockError) {
+      console.error("[orders:create] product stock update failed, rolling back", stockError);
+      await Promise.all(
+        updatedProductItems.map(async (item) => {
+          await Product.findByIdAndUpdate(item.productId, {
+            $inc: { outStock: -item.quantity, inStock: item.quantity },
+          });
+          console.log("[orders:create] product stock rollback applied", {
+            productId: item.productId,
+            quantity: item.quantity,
+          });
+        }),
+      );
+      throw stockError;
+    }
+
+    console.log("[orders:create] order completed successfully", {
+      orderNumber,
+      orderId: newOrder._id.toString(),
+    });
 
     res
       .status(200)
       .json({ message: "Tạo đơn hàng thành công", data: orderNumber });
   } catch (error) {
-    next(createError(500, error.message || `Lỗi không xác định`));
+    console.error("[orders:create] failed", {
+      message: error?.message,
+      status: error?.status,
+      stack: error?.stack,
+    });
+
+    if (error && allocatedReceiptBatches.length > 0) {
+      await releaseReceiptAllocations(allocatedReceiptBatches);
+      console.log("[orders:create] receipt allocations rolled back", {
+        count: allocatedReceiptBatches.length,
+      });
+    }
+
+    if (error?.status) {
+      return next(error);
+    }
+
+    return next(createError(500, error.message || `Lỗi không xác định`));
   }
 };
 
@@ -406,8 +498,15 @@ export const cancel = async (req, res, next) => {
         }
 
         await Product.findByIdAndUpdate(productId, {
-          $inc: { outStock: -Number(item.quantity || 0) },
+          $inc: {
+            outStock: -Number(item.quantity || 0),
+            inStock: Number(item.quantity || 0),
+          },
         });
+
+        if (Array.isArray(item.receiptAllocations) && item.receiptAllocations.length > 0) {
+          await releaseReceiptAllocations(item.receiptAllocations);
+        }
       })
     );
 

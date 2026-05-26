@@ -61,6 +61,10 @@ const ProductSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isOcop: {
+      type: Boolean,
+      default: false,
+    },
     like: {
       type: Number,
       default: 0,

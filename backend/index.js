@@ -15,6 +15,12 @@ import postRoute from "./routes/post.js";
 import commentRoute from "./routes/comment.js";
 import cartRoute from "./routes/cart.js";
 import shopRoute from "./routes/shop.js";
+import goodReceiptRoute from "./routes/goodReceipt.js";
+import {
+  processExpiredReceipts,
+  startReceiptExpiryScheduler,
+  syncAllProductStocks,
+} from "./utils/inventory.js";
 import chatRoute from "./routes/chat.js";
 import messageRoute from "./routes/message.js";
 
@@ -60,6 +66,7 @@ app.use("/posts", postRoute);
 app.use("/comments", commentRoute);
 app.use("/carts", cartRoute);
 app.use("/shops", shopRoute);
+app.use("/good-receipts", goodReceiptRoute);
 app.use("/chat", chatRoute);
 app.use("/messages", messageRoute);
 
@@ -88,6 +95,10 @@ async function startServer() {
   try {
     await mongoose.connect(MONGO_URI);
     console.log("MongoDB connected successfully");
+
+    await processExpiredReceipts();
+    await syncAllProductStocks();
+    startReceiptExpiryScheduler();
 
     app.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);

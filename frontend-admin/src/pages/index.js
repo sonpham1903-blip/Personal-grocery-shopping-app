@@ -12,5 +12,6 @@ export { default as Profile } from "./Profile";
 export { default as Post } from "./Post";
 export { default as NewPost } from "./NewPost";
 export { default as EditPost } from "./EditPost";
+export { default as GoodReceipts } from "./GoodReceipts";
 export { default as Messages } from "./Messages";
 

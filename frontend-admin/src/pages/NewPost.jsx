@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { storage } from "../../ultis/firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useSelector } from "react-redux";
 import ktsRequest from "../../ultis/ktsrequest";
 import { toast } from "react-toastify";
+import { uploadSingleFile } from "../../ultis/handleFile";
 
 const NewPost = () => {
   const [value, setValue] = useState("");
@@ -21,26 +20,17 @@ const NewPost = () => {
     const uploadFile = async () => {
       if (!file) return;
       setUrl("");
-      const name = new Date().getTime() + currentUser._id + "_" + file.name;
-      const storageRef = ref(
-        storage,
-        `images/posts/${currentUser._id}/${name}`,
-      );
-      const uploadTask = uploadBytesResumable(storageRef, file);
 
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {},
-        (error) => {
-          console.error("Upload error:", error);
-          toast.error("Lỗi upload ảnh");
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            setUrl(downloadURL);
-          });
-        },
-      );
+      try {
+        const downloadURL = await uploadSingleFile(
+          file,
+          `images/posts/${currentUser._id}`,
+        );
+        setUrl(downloadURL);
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast.error(error.message || "Lỗi upload ảnh");
+      }
     };
     uploadFile();
   }, [file, currentUser._id]);

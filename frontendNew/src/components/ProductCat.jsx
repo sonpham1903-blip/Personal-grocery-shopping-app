@@ -61,7 +61,7 @@ const ProductCat = (props) => {
             />
           </div>
           {data.map((p, i) => {
-            return <ItemCard data={p} key={i} />;
+            return <ItemCard data={p} showSoldCount key={i} />;
           })}
         </div>
       </div>

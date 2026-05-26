@@ -6,70 +6,135 @@ import vi from "timeago.js/lib/lang/vi";
 import * as timeago from "timeago.js";
 import io from "socket.io-client";
 import { ktsSocket } from "../../ultis/config";
+
 const Message = (props) => {
   const [chat, setChat] = useState({});
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [shop, setShop] = useState({});
-  const [resfresh, setRefresh] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [socket, setSocket] = useState(null);
   const scrollRef = useRef();
 
   timeago.register("vi", vi);
-  const socket = io.connect(ktsSocket);
 
-  socket.on("newNoti", () => {
-    setRefresh(true);
-  });
+  // Initialize socket connection once
   useEffect(() => {
+    try {
+      console.log("Connecting to Socket.io at:", ktsSocket);
+      const newSocket = io.connect(ktsSocket, {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5,
+        transports: ["websocket", "polling"],
+      });
+
+      setSocket(newSocket);
+
+      newSocket.on("connect", () => {
+        console.log("Socket connected:", newSocket.id);
+      });
+
+      newSocket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error);
+      });
+
+      newSocket.on("disconnect", (reason) => {
+        console.log("Socket disconnected:", reason);
+      });
+
+      newSocket.on("newNoti", () => {
+        console.log("Received newNoti event");
+        setRefresh(prev => !prev);
+      });
+
+      return () => {
+        newSocket.disconnect();
+      };
+    } catch (err) {
+      console.error("Socket initialization error:", err);
+    }
+  }, []);
+
+  // Emit newUser when component mounts or user changes
+  useEffect(() => {
+    if (!props.me || !socket) return;
     socket.emit("newUser", {
       uid: props.me._id,
       uname: props.me.username,
     });
-  }, []);
+  }, [props.me, socket]);
+
+  // Fetch chat and messages
   useEffect(() => {
-    setRefresh(false);
+    if (!props.me || !props.msg?.other) return;
+
     const fetchData = async () => {
       try {
         const res = await ktsRequest.get(
-          `/chat/find/${props.me._id}/${props.msg.other}`
+          `/chat/find/${props.me._id}/${props.msg.other}`,
+          {
+            headers: {
+              Authorization: `Bearer ${props.me.token}`,
+            },
+          }
         );
         setChat(res.data);
-        setShop(res.data.shop);
+        setShop(res.data.shop || res.data.partner);
         setMessages(res.data.messages);
       } catch (error) {
+        console.error("Error fetching chat:", error);
         toast.error(
-          `${error.response ? error.response.data : "Network Error!"}`
+          `${error.response?.data?.message || "Network Error!"}`
         );
       }
     };
     fetchData();
-  }, [resfresh, props]);
+  }, [refresh, props.me, props.msg?.other]);
 
   const handleClick = async (text) => {
-    if (text) {
-      try {
-        const res = await ktsRequest.post(`/messages`, {
-          chatId: chat.chatId,
-          sender: props.me,
-          text: text,
-        });
-        setRefresh(true);
-        setMessage("");
-        props.onRefresh(true);
+    if (!text.trim() || !chat._id) {
+      toast.error("Không thể gửi tin nhắn trống hoặc chat ID không xác định");
+      return;
+    }
+
+    try {
+      await ktsRequest.post(
+        `/messages`,
+        {
+          chatId: chat._id,
+          sender: props.me._id,
+          text: text.trim(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${props.me.token}`,
+          },
+        }
+      );
+      setMessage("");
+      setRefresh(prev => !prev);
+      props.onRefresh?.(true);
+
+      // Notify recipient
+      if (socket) {
         socket.emit("refresh", {
           uid: props.msg.other,
         });
-      } catch (error) {
-        toast.error(
-          `${error.response ? error.response.data : "Network Error!"}`
-        );
       }
-    } else {
-      return;
+      toast.success("Tin nhắn đã được gửi");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(
+        `${error.response?.data?.message || "Lỗi gửi tin nhắn"}`
+      );
     }
   };
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
   return (
     <div className="w-full h-full rounded-md overflow-hidden bg-white">

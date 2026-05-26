@@ -6,11 +6,11 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    senderId: {
+    sender: {
       type: String,
       required: true,
     },
-    content: {
+    text: {
       type: String,
       default: "",
     },

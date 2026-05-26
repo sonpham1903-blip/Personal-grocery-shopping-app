@@ -108,6 +108,6 @@ export const status = [
 
 const defaultSocketUrl = import.meta.env.DEV
   ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:9200`
-  : "";
+  : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:9200`;
 
 export const ktsSocket = import.meta.env.VITE_SOCKET_URL || defaultSocketUrl;

@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import { Server } from "socket.io";
+import { createServer } from "http";
 // import multer from "multer";
 // import path from "path";
 import categoryRoute from "./routes/category.js";
@@ -13,6 +15,8 @@ import postRoute from "./routes/post.js";
 import commentRoute from "./routes/comment.js";
 import cartRoute from "./routes/cart.js";
 import shopRoute from "./routes/shop.js";
+import chatRoute from "./routes/chat.js";
+import messageRoute from "./routes/message.js";
 
 dotenv.config();
 
@@ -56,6 +60,18 @@ app.use("/posts", postRoute);
 app.use("/comments", commentRoute);
 app.use("/carts", cartRoute);
 app.use("/shops", shopRoute);
+app.use("/chat", chatRoute);
+app.use("/messages", messageRoute);
+
+// Simple visitor count endpoint (used by frontend to record page visits)
+app.get("/count", async (req, res) => {
+  try {
+    // For now just return success. Can be extended to persist counts.
+    return res.json({ success: true, message: "count recorded" });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 
 
@@ -65,6 +81,9 @@ app.use((err, req, res, next) => {
   res.status(status).json({ status, message });
 });
 
+// Socket.io setup
+const userMap = new Map(); // Map userId to socketId
+
 async function startServer() {
   try {
     await mongoose.connect(MONGO_URI);
@@ -72,6 +91,54 @@ async function startServer() {
 
     app.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);
+    });
+
+    // Start Socket.io server on port 9200
+    const httpServer = createServer();
+    const io = new Server(httpServer, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        credentials: true,
+      },
+      transports: ["websocket", "polling"],
+    });
+
+    io.on("connection", (socket) => {
+      console.log("New user connected:", socket.id);
+
+      // Map user to socket when they connect
+      socket.on("newUser", (data) => {
+        const { uid } = data;
+        userMap.set(uid, socket.id);
+        console.log(`User ${uid} mapped to socket ${socket.id}`);
+      });
+
+      // Notify recipient when new message is received
+      socket.on("refresh", (data) => {
+        const { uid } = data;
+        const recipientSocketId = userMap.get(uid);
+        if (recipientSocketId) {
+          io.to(recipientSocketId).emit("newNoti");
+          console.log(`Notification sent to user ${uid}`);
+        }
+      });
+
+      // Clean up when user disconnects
+      socket.on("disconnect", () => {
+        // Remove user from map
+        for (const [userId, socketId] of userMap.entries()) {
+          if (socketId === socket.id) {
+            userMap.delete(userId);
+            console.log(`User ${userId} disconnected`);
+            break;
+          }
+        }
+      });
+    });
+
+    httpServer.listen(9200, () => {
+      console.log("Socket.io server is running on port 9200");
     });
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);

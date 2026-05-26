@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/imgs/logo_v4.png";
 import empty from "../assets/imgs/no-cart.png";
@@ -9,6 +9,7 @@ import Sidebar from "./Sidebar";
 import { logout } from "../redux/userSlice";
 import { setMsg } from "../redux/msgSlice";
 import ktsRequest from "../../ultis/ktsrequest";
+import Chat from "./Chat";
 const Cart = (props) => {
   const show = window.location.pathname === "/cart" ? false : true;
   let subtotal1 = 0;
@@ -148,6 +149,32 @@ const Header = () => {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  // Chat states
+  const [openChatDropdown, setOpenChatDropdown] = useState(false);
+  const [chats, setChats] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [loadingChats, setLoadingChats] = useState(false);
+
+  // Fetch chats for current user
+  const fetchChats = async () => {
+    if (!currentUser) return;
+    setLoadingChats(true);
+    try {
+      const res = await ktsRequest.get(`/chat/user/${currentUser._id}`);
+      setChats(res.data);
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+    } finally {
+      setLoadingChats(false);
+    }
+  };
+
+  useEffect(() => {
+    if (openChatDropdown && currentUser) {
+      fetchChats();
+    }
+  }, [openChatDropdown, currentUser]);
   const hoverOn = () => {
     setOpenCart(true);
   };
@@ -182,6 +209,13 @@ const Header = () => {
   return (
     <div className="max-w-screen-xl mx-auto text-center flex items-center justify-between py-3 gap-2 px-3 md:px-0">
       {toggle && <Sidebar open={toggle} close={setToggle} />}
+      {activeChat && (
+        <Chat
+          me={currentUser}
+          shop={activeChat}
+          onClose={setActiveChat}
+        />
+      )}
       <Link to="/" className="hidden md:block">
         <img src={logo} alt="" className="w-56 h-auto" />
       </Link>
@@ -257,6 +291,71 @@ const Header = () => {
             <p className="text-primary font-extrabold">XXXXXXXXXX</p>
           </div>
         </div>
+        {/* Chat Button */}
+        {currentUser && (
+          <div className="relative">
+            <button
+              className="flex items-center cursor-pointer bg-none md:bg-blue-600 rounded px-4 py-2 md:text-white font-semibold gap-2 text-blue-600 md:hover:bg-blue-700 hover:text-blue-700"
+              onClick={() => setOpenChatDropdown(!openChatDropdown)}
+              title="Tin nhắn"
+            >
+              <p className="hidden lg:block text-xs uppercase">tin nhắn</p>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6 md:w-5 md:h-5 md:text-white"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20.25 8.511c.884.318 1.672 1.002 2.05 1.85a3 3 0 11-5.307-1.852Zm-7.5 0c.884.318 1.672 1.002 2.05 1.85a3 3 0 11-5.306-1.852m7.5 0c-.884.318-1.672 1.002-2.05 1.85m0-7.5h-7.5m7.5 7.5H2.25m11.25 0a3 3 0 11-6 0 3 3 0 016 0Z"
+                />
+              </svg>
+            </button>
+            {openChatDropdown && (
+              <div
+                className="absolute top-12 right-0 z-50 rounded border border-gray-200 bg-white shadow-lg flex flex-col w-72 max-h-96 overflow-hidden"
+                onClick={(event) => event.stopPropagation()}
+              >
+                {loadingChats ? (
+                  <div className="p-4 text-center text-gray-500">Đang tải...</div>
+                ) : chats.length > 0 ? (
+                  <div className="overflow-y-auto divide-y divide-gray-200">
+                    {chats.map((chat) => (
+                      <button
+                        key={chat._id}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                        onClick={() => {
+                          setActiveChat(chat.partner._id);
+                          setOpenChatDropdown(false);
+                        }}
+                      >
+                        <img
+                          src={chat.partner.img || "https://via.placeholder.com/40"}
+                          alt={chat.partner.displayName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-gray-800">
+                            {chat.partner.displayName || chat.partner.username}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {chat.lastMessage || "Không có tin nhắn"}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-gray-500">Không có cuộc hội thoại</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <div
           className="flex items-center cursor-pointer relative bg-none md:bg-green-600 rounded px-4 py-2 md:text-white font-semibold gap-2  md:hover:bg-green-700 hover:text-primary text-primary"
           onMouseOver={hoverOn}

@@ -1,90 +1,182 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import ktsRequest from "../../ultis/ktsrequest";
-import TimeAgo from "timeago-react";
-import vi from "timeago.js/lib/lang/vi";
 import * as timeago from "timeago.js";
+import vi from "timeago.js/lib/lang/vi";
+import TimeAgo from "timeago-react";
 import io from "socket.io-client";
 import { ktsSocket } from "../../ultis/config";
+
+// Register locale once
+// Register vi locale (handle commonjs default export shape)
+const viLocale = vi && vi.default ? vi.default : vi;
+timeago.register("vi", viLocale);
+
 const Chat = (props) => {
   const [chat, setChat] = useState({});
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [shop, setShop] = useState({});
-  const [resfresh, setRefresh] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [socketError, setSocketError] = useState(null);
   const scrollRef = useRef();
-  timeago.register("vi", vi);
+
+  // Initialize socket connection once
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      console.log("Connecting to Socket.io at:", ktsSocket);
+      // create socket and store in ref to avoid double disconnects in Strict Mode
+      const newSocket = io.connect(ktsSocket, {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5,
+        transports: ["websocket", "polling"],
+        autoConnect: true,
+      });
+
+      socketRef.current = newSocket;
+      setSocket(newSocket);
+
+      newSocket.on("connect", () => {
+        console.log("Socket connected:", newSocket.id);
+        setSocketError(null);
+      });
+
+      newSocket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error);
+        setSocketError(`Lỗi kết nối Socket.io: ${error.message}`);
+      });
+
+      newSocket.on("disconnect", (reason) => {
+        console.log("Socket disconnected:", reason);
+      });
+
+      newSocket.on("newNoti", () => {
+        console.log("Received newNoti event");
+        setRefresh((prev) => !prev);
+      });
+
+      return () => {
+        try {
+          // only disconnect if this ref still matches the socket
+          if (socketRef.current === newSocket) {
+            newSocket.disconnect();
+            socketRef.current = null;
+          }
+        } catch (e) {
+          console.warn("Socket cleanup error:", e);
+        }
+      };
+    } catch (err) {
+      console.error("Socket initialization error:", err);
+      setSocketError("Không thể khởi tạo Socket.io");
+    }
+  }, []);
+
+  // Emit newUser when component mounts or user changes
+  useEffect(() => {
+    if (!props.me || !socket) return;
+    socket.emit("newUser", {
+      uid: props.me._id,
+      uname: props.me.username,
+    });
+  }, [props.me, socket]);
+
+  // Close chat if user is not logged in
   useEffect(() => {
     if (!props.me) {
       props.onClose(false);
       return;
     }
-  }, [props]);
-  const socket = io.connect(ktsSocket);
+  }, [props.me, props]);
 
-  socket.on("newNoti", () => {
-    setRefresh(true);
-  });
+  // Fetch chat and messages
   useEffect(() => {
-    props.me &&
-      socket.emit("newUser", {
-        uid: props.me._id,
-        uname: props.me.username,
-      });
-  }, [props]);
-  useEffect(() => {
-    setRefresh(false);
+    if (!props.me || !props.shop) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
     const fetchData = async () => {
       try {
         const res = await ktsRequest.get(
           `/chat/find/${props.me._id}/${props.shop}`
         );
         setChat(res.data);
-        setShop(res.data.shop);
-        setMessages(res.data.messages);
+        setShop(res.data.shop || {});
+        setMessages(res.data.messages || []);
       } catch (error) {
-        toast.error(
-          `${error.response ? error.response.data : "Network Error!"}`
-        );
+        console.error("Error fetching chat:", error);
+        const errorMsg = error.response?.data?.message || error.message || "Network Error!";
+        setError(errorMsg);
+        toast.error(`Lỗi: ${errorMsg}`);
+      } finally {
+        setLoading(false);
       }
     };
-    props.me && fetchData();
-  }, [resfresh, props]);
+
+    fetchData();
+  }, [refresh, props.me, props.shop]);
 
   const handleClick = async (text) => {
-    if (text) {
-      try {
-        const res = await ktsRequest.post(`/messages`, {
-          chatId: chat.chatId,
-          sender: props.me._id,
-          text: text,
-        });
-        setRefresh(true);
-        setMessage("");
+    if (!text.trim() || !chat._id) {
+      toast.error("Không thể gửi tin nhắn trống hoặc chat ID không xác định");
+      return;
+    }
+
+    try {
+      await ktsRequest.post(`/messages`, {
+        chatId: chat._id,
+        sender: props.me._id,
+        text: text.trim(),
+      });
+      setMessage("");
+      setRefresh(prev => !prev);
+      
+      // Notify recipient
+      if (socket) {
         socket.emit("refresh", {
           uid: props.shop,
         });
-      } catch (error) {
-        toast.error(
-          `${error.response ? error.response.data : "Network Error!"}`
-        );
       }
-    } else {
-      return;
+      toast.success("Tin nhắn đã được gửi");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(
+        `${error.response?.data?.message || "Lỗi gửi tin nhắn"}`
+      );
     }
   };
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
   return (
-    <div className="bg-white max-w-md w-full shadow-md rounded fixed bottom-0 right-0 overflow-hidden z-30">
+    <div className="bg-white max-w-md w-full shadow-md rounded fixed bottom-0 right-0 overflow-hidden z-30 flex flex-col">
+      {/* Header */}
       <section className="">
-        <div className="flex justify-between">
-          <span className="px-3 py-3 text-primary font-semibold">
-            {shop.displayName}
-          </span>
+        <div className="flex justify-between items-center bg-gradient-to-r from-primary to-green-600">
+          <div className="px-3 py-3 text-white font-semibold flex-1">
+            {loading ? (
+              "Đang tải..."
+            ) : shop?.displayName || shop?.username ? (
+              shop.displayName || shop.username
+            ) : (
+              "Chat"
+            )}
+          </div>
           <button
-            className="p-3 border-l bg-primary text-white"
+            className="p-3 hover:bg-green-700 text-white transition"
             onClick={() => {
               props.onClose(false);
             }}
@@ -106,8 +198,29 @@ const Chat = (props) => {
           </button>
         </div>
       </section>
-      <div className="h-96 py-2 px-2.5 bg-gray-100 my-auto shadow-inner overflow-y-auto">
-        {messages?.length > 0 ? (
+
+      {/* Error Messages */}
+      {socketError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 text-sm">
+          ⚠️ {socketError}
+        </div>
+      )}
+      {error && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 text-sm">
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Messages Area */}
+      <div className="h-96 py-2 px-2.5 bg-gray-100 flex-1 shadow-inner overflow-y-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-gray-500">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+              Đang tải cuộc hội thoại...
+            </div>
+          </div>
+        ) : messages?.length > 0 ? (
           <ul className="space-y-2">
             {props.me &&
               messages?.map((m, i) => {
@@ -119,15 +232,15 @@ const Chat = (props) => {
                     key={i}
                   >
                     <div
-                      ref={scrollRef}
+                      ref={i === messages.length - 1 ? scrollRef : null}
                       className={`${
                         m.sender === props.me._id
                           ? "bg-green-500"
                           : "bg-blue-500"
-                      } inline-block text-start px-3 py-1 rounded-md`}
+                      } inline-block text-start px-3 py-1 rounded-md max-w-xs break-words`}
                     >
-                      <div className="text-white">{m.text}</div>
-                      <div className="text-xs text-gray-800">
+                      <div className="text-white text-sm">{m.text}</div>
+                      <div className="text-xs text-gray-200">
                         <TimeAgo datetime={m.createdAt} locale="vi" />
                       </div>
                     </div>
@@ -136,10 +249,14 @@ const Chat = (props) => {
               })}
           </ul>
         ) : (
-          "Bạn chưa có tin nhắn nào."
+          <div className="flex items-center justify-center h-full text-gray-500">
+            Bạn chưa có tin nhắn nào. Hãy gửi tin nhắn đầu tiên!
+          </div>
         )}
       </div>
-      <div className="flex justify-between px-4 gap-2 py-4">
+
+      {/* Input Area */}
+      <div className="flex justify-between px-4 gap-2 py-4 bg-white border-t">
         <input
           onChange={(e) => {
             setMessage(e.target.value);
@@ -153,12 +270,14 @@ const Chat = (props) => {
           value={message}
           type="text"
           placeholder="Nhập nội dung tại đây..."
-          className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+          disabled={loading || !chat._id}
+          className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
         />
         <button
-          className="w-14 outline-0 text-base bg-primary text-white rounded"
+          className="w-14 outline-0 text-base bg-primary text-white rounded hover:bg-green-700 disabled:bg-gray-400 transition"
           onClick={() => handleClick(message)}
           id="myBtn"
+          disabled={loading || !chat._id || !message.trim()}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

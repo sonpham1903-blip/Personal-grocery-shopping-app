@@ -297,6 +297,26 @@ const Product = () => {
                 <h3 className="text-gray-700 text-xl font-bold">
                   {product?.productName}
                 </h3>
+                {(() => {
+                  const tags = Array.isArray(product?.tags)
+                    ? product.tags
+                    : typeof product?.tags === "string"
+                    ? product.tags.split(/,|\n|;/).map((t) => t.trim()).filter(Boolean)
+                    : [];
+
+                  return tags.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {tags.map((t, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
                 <div className="flex">
                   {/* Xem shop */}
                   <div

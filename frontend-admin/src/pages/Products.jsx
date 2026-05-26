@@ -162,7 +162,7 @@ const Products = () => {
                     )}
                   </div>
                   <div className="w-2/12">{p.cat}</div>
-                  <div className="w-2/12">{vnd(p?.currentPrice)}</div>
+                  <div className="w-2/12">{vnd(p?.stockPrice)}</div>
                   <div className="w-2/12">
                     {isAdmin ? (
                       <div

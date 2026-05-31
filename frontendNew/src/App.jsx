@@ -12,6 +12,7 @@ import Profile from "./pages/user/Profile";
 import Login from "./pages/user/Login";
 import Register from "./pages/user/Register";
 import NotFound from "./pages/user/NotFound";
+import ShopAssistance from "./pages/user/ShopAssistance";
 import ktsRequest from "../ultis/ktsrequest";
 import { ToastContainer } from "react-toastify";
 function App() {
@@ -36,6 +37,7 @@ function App() {
           <Route path="/news/:postId" element={<PostsDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/shopassistance" element={<ShopAssistance />} />
           <Route path="/notfound" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/notfound" replace />} />
           <Route path="/login" element={<Login />} />

@@ -77,7 +77,7 @@ const Login = () => {
 
               <button
                 type="submit"
-                className="w-full uppercase rounded bg-primary px-5 py-3 text-center text-sm font-medium text-white hover:bg-primary focus:outline-none focus:ring"
+                className="w-full uppercase rounded bg-blue-600 px-5 py-3 text-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 onClick={handleLogin}
               >
                 Đăng nhập

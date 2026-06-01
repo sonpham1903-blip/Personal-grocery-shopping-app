@@ -77,6 +77,34 @@ const Suppliers = () => {
     );
   };
 
+  const getStatusMeta = (status) => {
+    if (status === 1) {
+      return {
+        label: "Đang hoạt động",
+        className: "bg-green-200 text-green-700",
+      };
+    }
+
+    if (status === 0) {
+      return {
+        label: "Tạm khóa",
+        className: "bg-orange-200 text-orange-700",
+      };
+    }
+
+    if (status === 2) {
+      return {
+        label: "Chưa kích hoạt",
+        className: "bg-gray-300 text-gray-700",
+      };
+    }
+
+    return {
+      label: "Đã xóa",
+      className: "bg-gray-300 text-gray-700",
+    };
+  };
+
   return (
     <div className="p-3 text-xs md:text-base">
       <div className="flex justify-between">
@@ -137,17 +165,17 @@ const Suppliers = () => {
                   <div className="w-2/12">{u?.phone || "-"}</div>
                   <div className="w-3/12 break-all">{u?._id}</div>
                   <div className="w-2/12 text-center">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                        u.status === 1
-                          ? "bg-green-200 text-green-700"
-                          : u.status === 0
-                          ? "bg-orange-200 text-orange-700"
-                          : "bg-gray-300 text-gray-700"
-                      }`}
-                    >
-                      {u.status === 1 ? "Đang hoạt động" : u.status === 0 ? "Tạm khóa" : "Đã xóa"}
-                    </span>
+                    {(() => {
+                      const statusMeta = getStatusMeta(u.status);
+
+                      return (
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-semibold ${statusMeta.className}`}
+                        >
+                          {statusMeta.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="w-2/12 flex gap-2">
                     <button

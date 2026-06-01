@@ -172,7 +172,7 @@ const Footer = () => {
         </div>
       </div>
       <div className=" bg-green-600 mx-auto py-3 text-white text-center flex items-center justify-center">
-        <a href="https://sale168.vn">
+        <a href="">
           <img width={100} height={100} src={logo_v3} alt="" />
         </a>
       </div>

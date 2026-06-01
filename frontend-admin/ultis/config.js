@@ -58,12 +58,6 @@ export const adminDashboard = {
       d: "M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z",
     },
     {
-      title: "phiếu nhập",
-      path: "/admin/phieu-nhap",
-      role: ["admin"],
-      d: "M9 12.75l3 3 5.25-5.25M3 6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V6.75z",
-    },
-    {
       title: "loại hàng hóa",
       path: "/admin/loai-hang-hoa",
       role: ["admin"],
@@ -74,6 +68,12 @@ export const adminDashboard = {
       path: "/admin/nha-cung-cap",
       role: ["admin"],
       d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM15.75 21a6.75 6.75 0 10-13.5 0h13.5z",
+    },
+    {
+      title: "khách hàng",
+      path: "/admin/nguoi-dung",
+      role: ["admin"],
+      d: "M17 21h5v-2a4 4 0 00-4-4h-1m-4 6H7m10 0v-2c0-.653-.156-1.27-.434-1.816M7 21H2v-2a4 4 0 014-4h1m0 0a4 4 0 118 0m-8 0a4 4 0 018 0m0 0c.6-.424 1.285-.724 2.026-.85M15 7a4 4 0 11-8 0 4 4 0 018 0z",
     },
     {
       title: "tin nhắn",
@@ -90,8 +90,6 @@ export const adminDashboard = {
   ],
 };
 
-const defaultSocketUrl = import.meta.env.DEV
-  ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:9200`
-  : `${window.location.protocol === "https:" ? "wss" : "ws"}://api.sale168.vn:9200`;
+const defaultSocketUrl = import.meta.env.DEV ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:9200` : "";
 
 export const ktsSocket = import.meta.env.VITE_SOCKET_URL || defaultSocketUrl;

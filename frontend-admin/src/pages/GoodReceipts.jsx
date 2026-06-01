@@ -31,7 +31,6 @@ const GoodReceipts = () => {
     quantity: "",
     importedDate: formatDateInput(),
     expirationDate: "",
-    soldQuantity: "0",
   });
 
   const isAdmin = currentUser?.role === "admin";
@@ -103,7 +102,6 @@ const GoodReceipts = () => {
       quantity: "",
       importedDate: formatDateInput(),
       expirationDate: "",
-      soldQuantity: "0",
     });
   };
 
@@ -119,7 +117,6 @@ const GoodReceipts = () => {
       quantity: String(receipt.quantity ?? 0),
       importedDate: receipt.importedDate ? formatDateInput(receipt.importedDate) : formatDateInput(),
       expirationDate: receipt.expirationDate ? formatDateInput(receipt.expirationDate) : "",
-      soldQuantity: String(receipt.soldQuantity ?? 0),
     });
   };
 
@@ -137,12 +134,6 @@ const GoodReceipts = () => {
       return;
     }
 
-    const soldQuantity = Number(form.soldQuantity || 0);
-    if (!Number.isFinite(soldQuantity) || soldQuantity < 0 || soldQuantity > quantity) {
-      toast.error("Số lượng đã bán phải nằm trong khoảng từ 0 đến số lượng nhập");
-      return;
-    }
-
     if (!form.importedDate || !form.expirationDate) {
       toast.error("Vui lòng chọn ngày nhập và hạn sử dụng");
       return;
@@ -155,7 +146,6 @@ const GoodReceipts = () => {
         quantity,
         importedDate: form.importedDate,
         expirationDate: form.expirationDate,
-        soldQuantity,
       };
 
       const requestConfig = {
@@ -225,19 +215,6 @@ const GoodReceipts = () => {
                 onChange={handleChange}
                 className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none"
                 placeholder="Nhập số lượng"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Số lượng đã bán</label>
-              <input
-                type="number"
-                min="0"
-                name="soldQuantity"
-                value={form.soldQuantity}
-                onChange={handleChange}
-                className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none"
-                placeholder="0"
               />
             </div>
 

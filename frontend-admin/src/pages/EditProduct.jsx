@@ -212,7 +212,7 @@ const EditProduct = () => {
           excutionDate: ocopInfo ? ocopCertDate : "",
           star: ocopInfo && ocopStar !== "" ? Number(ocopStar) : undefined,
           updatedBy: currentUser.username,
-          shopName: currentUser.displayName || "Sale168.vn",
+          shopName: currentUser.displayName || "admin",
           description: value,
         },
       };

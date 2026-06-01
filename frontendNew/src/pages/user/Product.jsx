@@ -107,7 +107,7 @@ const Product = () => {
       description: product.description,
       currentPrice: product.currentPrice,
       shopID: product.shopID,
-      shopName: product.shopName || "Sale168.vn",
+      shopName: product.shopName,
       img: product.imgs[0],
       quantity,
     };
@@ -133,7 +133,7 @@ const Product = () => {
               productName: product.productName,
               currentPrice: product.currentPrice,
               shopID: product.shopID,
-              shopName: product.shopName || "Sale168.vn",
+              shopName: product.shopName,
               img: product.imgs?.[0] || "",
               quantity,
             }),

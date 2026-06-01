@@ -124,7 +124,7 @@ const NewProduct = () => {
           excutionDate: ocopInfo ? ocopCertDate : "",
           star: ocopInfo && ocopStar !== "" ? Number(ocopStar) : undefined,
           shopID: currentUser._id,
-          shopName: currentUser.displayName || "Sale168.vn",
+          shopName: currentUser.displayName || "admin",
           description: value,
         },
       };

@@ -78,28 +78,6 @@ const Sidebar = () => {
         {role === "shop" ? (
           <>
             <button
-              onClick={() => navigate("/admin/phieu-nhap")}
-              className="flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-sm text-gray-800 hover:text-primary"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12.75l3 3 5.25-5.25M3 6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V6.75z"
-                />
-              </svg>
-              {open && (
-                <span className="whitespace-pre absolute left-20">Phiếu nhập</span>
-              )}
-            </button>
-            <button
               onClick={() => navigate("/admin/bai-viet")}
               className="flex items-center gap-5 pl-4 py-1.5 mx-2 rounded text-sm text-gray-800 hover:text-primary"
             >

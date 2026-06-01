@@ -1,10 +1,11 @@
 import { createError } from "../error.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
+import Order from "../models/Order.js";
 const permission = ["admin", "staff"];
 import bcrypt from "bcryptjs";
 const STATUS_ALLOWED = [-1, 0, 1, 2];
-const DEFAULT_RESET_PASSWORD = process.env.DEFAULT_RESET_PASSWORD || "admin";
+const DEFAULT_RESET_PASSWORD = process.env.DEFAULT_RESET_PASSWORD || "password123";
 
 const parseRoles = (value = "") =>
   value
@@ -31,8 +32,29 @@ export const getUsers = async (req, res, next) => {
     return res.status(403).json("Tham số truyền vào không đúng");
   }
   try {
-    const users = await User.find().select(["-password"]);
-    res.status(200).json(users);
+    const [users, orderStats] = await Promise.all([
+      User.find().select(["-password"]).lean(),
+      Order.aggregate([
+        {
+          $group: {
+            _id: "$buyerId",
+            orderCount: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    const orderCountMap = orderStats.reduce((accumulator, item) => {
+      accumulator[String(item._id)] = item.orderCount;
+      return accumulator;
+    }, {});
+
+    res.status(200).json(
+      users.map((user) => ({
+        ...user,
+        orderCount: orderCountMap[String(user._id)] || 0,
+      }))
+    );
   } catch (error) {
     next(error);
   }

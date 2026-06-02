@@ -16,6 +16,7 @@ import {
   EditPost,
   GoodReceipts,
   Messages,
+  Reports,
 } from "../pages";
 import { useSelector } from "react-redux";
 
@@ -76,6 +77,7 @@ const Layout = () => {
             </Route>
             <Route path="don-hang" element={isAdmin ? <Navigate to="san-pham" replace /> : <Orders />} />
             <Route path="tin-nhan" element={<Messages />} />
+            <Route path="thong-ke" element={<Reports />} />
             <Route path="bai-viet">
               <Route index element={<Post />} />
               <Route path="new" element={<NewPost />} />

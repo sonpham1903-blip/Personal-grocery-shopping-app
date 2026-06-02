@@ -83,7 +83,7 @@ const PostDetail = () => {
 
             <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-6 border-b pb-4">
               <span>
-                <strong>Tác giả:</strong> {post.userName || "sale168.com"}
+                <strong>Tác giả:</strong> {post.userName || "admin"}
               </span>
               <span>
                 <strong>Ngày đăng:</strong>{" "}

@@ -10,6 +10,7 @@ import {
   EditProduct,
   Categories,
   Suppliers,
+  Users,
   Profile,
   Post,
   NewPost,
@@ -29,24 +30,16 @@ const Layout = () => {
       <Sidebar />
       <div className="bg-gray-200 flex-1 h-screen">
         <Header />
-        <div className="border-b border-gray-300 bg-white px-4 py-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              to="phieu-nhap"
-              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-            >
-              Phiếu nhập nhanh
-            </Link>
-            <span className="text-sm text-gray-600">
-              Quản lý nguồn hàng và hạn sử dụng theo từng lô nhập.
-            </span>
-          </div>
-        </div>
+        
         <div className="h-[88vh] overflow-auto">
           <Routes>
             <Route
               index
               element={isAdmin ? <Navigate to="san-pham" replace /> : <Home />}
+            />
+            <Route
+              path="nguoi-dung"
+              element={isAdmin ? <Users /> : <Navigate to="/admin" replace />}
             />
             <Route path="san-pham">
               <Route index element={<Products />} />

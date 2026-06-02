@@ -181,7 +181,7 @@ const Post = () => {
                   </div>
                   <div className="w-2/12 text-center">
                     <span className="text-red-500 font-semibold italic">
-                      {p?.userName || "sale168.com"}
+                      {p?.userName || "admin"}
                     </span>
                   </div>
                   <div className="w-2/12 text-center">

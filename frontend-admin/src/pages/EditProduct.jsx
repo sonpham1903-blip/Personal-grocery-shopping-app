@@ -63,7 +63,7 @@ const EditProduct = () => {
             cat: res.data.cat || "",
             tags: res.data.tags,
             stockPrice: res.data.stockPrice,
-            currentPrice: res.data.currentPrice,
+            // currentPrice is managed server-side and defaults to stockPrice
           });
         } else {
           return navigate("/admin/san-pham");
@@ -197,6 +197,14 @@ const EditProduct = () => {
         },
         data: {
           ...inputs,
+          tags: Array.isArray(inputs.tags)
+            ? inputs.tags
+            : typeof inputs.tags === "string"
+            ? inputs.tags
+                .split(/,|\n|;/)
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : [],
           imgs: imageUrlList,
           relatedDocuments,
           ocopCertImage,
@@ -204,7 +212,7 @@ const EditProduct = () => {
           excutionDate: ocopInfo ? ocopCertDate : "",
           star: ocopInfo && ocopStar !== "" ? Number(ocopStar) : undefined,
           updatedBy: currentUser.username,
-          shopName: currentUser.displayName || "Sale168.vn",
+          shopName: currentUser.displayName || "admin",
           description: value,
         },
       };
@@ -269,6 +277,20 @@ const EditProduct = () => {
               onChange={handleChange}
             />
           </div>
+          <div className="flex w-full items-center">
+            <label htmlFor="tags" className="w-1/3 hidden md:block">
+              Tags
+            </label>
+            <input
+              type="text"
+              name="tags"
+              id="tags"
+              className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
+              placeholder="Nhập tags, phân tách bởi dấu phẩy"
+              value={Array.isArray(inputs.tags) ? inputs.tags.join(", ") : inputs.tags || ""}
+              onChange={handleChange}
+            />
+          </div>
 
           <div className="flex w-full items-center">
             <label htmlFor="tags" className="w-1/3 hidden md:block">
@@ -308,21 +330,7 @@ const EditProduct = () => {
               onChange={handleChange}
             />
           </div>
-          <div className="flex w-full items-center">
-            <label htmlFor="currentPrice" className="w-1/3 hidden md:block">
-              Giá bán
-            </label>
-            <input
-              type="number"
-              name="currentPrice"
-              id="currentPrice"
-              className="block w-full rounded border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary-600 sm:text-sm"
-              placeholder="Giá bán (VNĐ)"
-              value={inputs.currentPrice || ""}
-              pattern="[0-9]*"
-              onChange={handleChange}
-            />
-          </div>
+          {/* Giá bán đã bỏ, chỉ giữ Giá niêm yết (stockPrice) */}
           <div className="flex w-full items-center">
             <label className="w-1/3 hidden md:block">Số lượng tồn kho</label>
             <div className="block w-full rounded border border-dashed border-gray-300 bg-gray-50 p-2 text-gray-600 sm:text-sm">

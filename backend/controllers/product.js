@@ -35,11 +35,28 @@ const normalizeProductPayload = (payload = {}) => {
     ? nextPayload.relatedDocuments.filter(Boolean)
     : [];
 
+  // Normalize tags: allow string or array from client
+  if (typeof nextPayload.tags === "string") {
+    nextPayload.tags = nextPayload.tags
+      .split(/,|\n|;/)
+      .map((t) => String(t).trim())
+      .filter(Boolean);
+  } else if (Array.isArray(nextPayload.tags)) {
+    nextPayload.tags = nextPayload.tags.map((t) => String(t).trim()).filter(Boolean);
+  } else {
+    nextPayload.tags = [];
+  }
+
   if (!isOcop) {
     nextPayload.ocopCertImage = "";
     nextPayload.excutionDate = undefined;
     nextPayload.star = undefined;
   }
+
+  // Ensure currentPrice exists and defaults to stockPrice
+  const stock = Number(nextPayload.stockPrice ?? 0);
+  const cp = nextPayload.currentPrice !== undefined ? Number(nextPayload.currentPrice) : stock;
+  nextPayload.currentPrice = Number.isFinite(cp) && cp >= 0 ? cp : stock;
 
   return nextPayload;
 };
@@ -48,8 +65,6 @@ export const createProduct = async (req, res, next) => {
   try {
     if (!req.body.stockPrice)
       return res.status(403).json("Giá niêm yết không hợp lệ");
-    if (!req.body.currentPrice)
-      return res.status(403).json("Giá bán không hợp lệ");
     if (!Array.isArray(req.body?.imgs) || req.body.imgs.length < 1)
       return res.status(403).json("Hình ảnh sản phẩm không hợp lệ");
     if (!req.user?.id) return res.status(401).json("Bạn chưa đăng nhập");
@@ -163,8 +178,6 @@ export const updateProduct = async (req, res, next) => {
   try {
     if (!req.body.stockPrice)
       return res.status(403).json("Giá niêm yết không hợp lệ");
-    if (!req.body.currentPrice)
-      return res.status(403).json("Giá bán không hợp lệ");
     if (!Array.isArray(req.body?.imgs) || req.body.imgs.length < 1)
       return res.status(403).json("Hình ảnh sản phẩm không hợp lệ");
     const product = await Product.findById(req.params.id);

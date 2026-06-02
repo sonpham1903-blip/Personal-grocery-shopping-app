@@ -22,8 +22,8 @@ export const signup = async (req, res, next) => {
       payload.status = 2;
     } else {
       payload.role = "user";
-      // User side should not be able to arbitrarily set status state.
-      delete payload.status;
+      // Activate regular users immediately (no admin activation needed)
+      payload.status = 1;
     }
 
     const newUser = new User(payload);

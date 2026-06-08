@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Footer, Header, Navbar, Promotion } from "../../components";
+import QRCodeImage from "../../assets/imgs/QR_CodeFull1.jpg";
 import { vnd } from "../../../ultis/ktsFunc";
 import ktsRequest from "../../../ultis/ktsrequest";
 import { setCart, resetCart, updateQuantityLocal, removeItemLocal } from "../../redux/cartReducer";
@@ -19,6 +20,7 @@ const Cart = () => {
   const { products } = useSelector((state) => state.cart);
   const { currentUser } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
+  const [showBankPaymentPopup, setShowBankPaymentPopup] = useState(false);
   const [formData, setFormData] = useState({
     buyerName: "",
     buyerPhone: "",
@@ -71,34 +73,13 @@ const Cart = () => {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "payment" && value !== "bank") {
+      setShowBankPaymentPopup(false);
+    }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!currentUser) {
-      toast.warn("Vui lòng đăng nhập để đặt hàng");
-      navigate("/login");
-      return;
-    }
-
-    if (products.length === 0) {
-      toast.warn("Giỏ hàng đang trống");
-      return;
-    }
-
-    if (
-      !formData.buyerName ||
-      !formData.buyerPhone ||
-      !formData.toCity ||
-      !formData.toDistrict ||
-      !formData.toWard ||
-      !formData.toAddress
-    ) {
-      toast.warn("Vui lòng điền đầy đủ thông tin giao hàng");
-      return;
-    }
-
+  const submitOrder = async () => {
     try {
       setLoading(true);
       const payload = {
@@ -135,13 +116,13 @@ const Cart = () => {
       console.log("[Cart] order response:", res.data);
 
       toast.success(res.data?.message || "Tạo đơn hàng thành công");
-      // clear server cart and local state via direct request
       try {
         await ktsRequest.post("/carts/clear", {}, { headers: { Authorization: `Bearer ${currentUser.token}` } });
       } catch (err) {
         // ignore
       }
       dispatch(resetCart());
+      setShowBankPaymentPopup(false);
       navigate("/products");
     } catch (error) {
       console.error("[Cart] order submit failed:", {
@@ -153,6 +134,57 @@ const Cart = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!currentUser) {
+      toast.warn("Vui lòng đăng nhập để đặt hàng");
+      navigate("/login");
+      return;
+    }
+
+    if (products.length === 0) {
+      toast.warn("Giỏ hàng đang trống");
+      return;
+    }
+
+    if (
+      !formData.buyerName ||
+      !formData.buyerPhone ||
+      !formData.toCity ||
+      !formData.toDistrict ||
+      !formData.toWard ||
+      !formData.toAddress
+    ) {
+      toast.warn("Vui lòng điền đầy đủ thông tin giao hàng");
+      return;
+    }
+
+    if (formData.payment === "bank" && !showBankPaymentPopup) {
+      setShowBankPaymentPopup(true);
+      toast.info("Vui lòng quét QR trong pop-up, sau đó bấm Hoàn thành để tạo đơn hàng.");
+      return;
+    }
+
+    await submitOrder();
+  };
+
+  const handleCompleteBankPayment = async () => {
+    if (loading) {
+      return;
+    }
+
+    await submitOrder();
+  };
+
+  const handleCancelBankPayment = () => {
+    if (loading) {
+      return;
+    }
+
+    setShowBankPaymentPopup(false);
   };
 
   const handleQuantityChange = (id, quantity) => {
@@ -453,6 +485,61 @@ const Cart = () => {
           </form>
         )}
       </div>
+      {showBankPaymentPopup && formData.payment === "bank" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Thanh toán chuyển khoản</h3>
+                <p className="text-sm text-gray-500">Quét QR và bấm Hoàn thành để tạo đơn hàng.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancelBankPayment}
+                className="rounded-full px-3 py-1 text-sm font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                aria-label="Đóng pop-up"
+              >
+                x
+              </button>
+            </div>
+            <div className="grid gap-6 px-5 py-5 md:grid-cols-[220px_1fr] md:items-center">
+              <div className="mx-auto flex h-52 w-52 items-center justify-center rounded-2xl bg-green-50 p-3 shadow-inner">
+                <img
+                  src={QRCodeImage}
+                  alt="QR thanh toán chuyển khoản"
+                  className="h-full w-full rounded-xl bg-white object-contain p-2"
+                />
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
+                  <p className="font-semibold text-gray-900">Hướng dẫn thanh toán</p>
+                  <p className="mt-2">1. Mở app ngân hàng và quét mã QR.</p>
+                  <p>2. Kiểm tra lại số tiền và nội dung chuyển khoản.</p>
+                  <p>3. Khi đã chuyển xong, bấm Hoàn thành để tạo đơn hàng.</p>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={handleCompleteBankPayment}
+                    disabled={loading}
+                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading ? "Đang xử lý..." : "Hoàn thành"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelBankPayment}
+                    disabled={loading}
+                    className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );

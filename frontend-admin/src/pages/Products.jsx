@@ -217,7 +217,13 @@ const Products = () => {
                           />
                         </svg>
                       </Link>
-                      <button className="p-1.5 bg-white rounded border border-red-600 text-red-600 hover:border-red-600 hover:bg-red-600 hover:text-white">
+                      <button
+                        onClick={() => {
+                          setDelProd(p);
+                          setOpenModal(true);
+                        }}
+                        className="p-1.5 bg-white rounded border border-red-600 text-red-600 hover:border-red-600 hover:bg-red-600 hover:text-white"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -225,10 +231,6 @@ const Products = () => {
                           strokeWidth={1.5}
                           stroke="currentColor"
                           className="w-4 h-4"
-                          onClick={() => {
-                            setDelProd(p);
-                            setOpenModal(true);
-                          }}
                         >
                           <path
                             strokeLinecap="round"
@@ -250,11 +252,11 @@ const Products = () => {
           <Modal
             title="cảnh báo"
             message={`Bạn chắc chắn muốn xóa sản phẩm "${delProd?.productName}"?`}
-            to={`/products/`}
+            to={`/products`}
+            method="delete"
             close={setOpenModal}
             token={token}
             data={delProd}
-            editedData={{ active: false }}
             refreshData={setRefresh}
           />
         )}

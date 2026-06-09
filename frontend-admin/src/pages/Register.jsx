@@ -5,6 +5,7 @@ import ktsRequest from "../../ultis/ktsrequest";
 import axios from "axios";
 
 const VIETNAM_ADMIN_API = "https://provinces.open-api.vn/api";
+const USERNAME_REGEX = /^[\p{L}\p{M}0-9_ ]+$/u;
 const Register = () => {
   const [username, setUserName] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -107,6 +108,12 @@ const Register = () => {
       toast.warn("Vui lòng chọn Tên đăng nhập!");
       return;
     }
+    if (!USERNAME_REGEX.test(username)) {
+      toast.warn(
+        "Tên đăng nhập chỉ được chứa chữ cái, số, khoảng trắng, dấu gạch dưới và ký tự tiếng Việt có dấu"
+      );
+      return;
+    }
     if (!password) {
       toast.warn("Mật khẩu không hợp lệ!");
       return;
@@ -179,7 +186,12 @@ const Register = () => {
         setBusinessLicensePdfUrl("");
       })
       .catch(function (error) {
-        toast.error("Tên đăng nhập đã có người sử dụng!");
+        const message =
+          error?.response?.data?.message ||
+          error?.response?.data ||
+          error?.message ||
+          "Đăng ký thất bại";
+        toast.error(message);
       });
   };
 

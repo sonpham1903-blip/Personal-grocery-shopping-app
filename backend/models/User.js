@@ -8,7 +8,10 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       minlength: 3,
       maxlength: 50,
-      match: /^[a-zA-Z0-9_]+$/,
+      match: [
+        /^[\p{L}\p{M}0-9_ ]+$/u,
+        "Tên đăng nhập chỉ được chứa chữ cái, số, khoảng trắng, dấu gạch dưới và ký tự tiếng Việt có dấu",
+      ],
     },
     displayName: {
       type: String,

@@ -33,6 +33,7 @@ const PORT = process.env.PORT || 3000;
 // If that fails, fall back to local DB which can be overridden with `MONGODB_LOCAL_URI`.
 const ATLAS_URI = process.env.MONGODB_URI;
 const LOCAL_URI = process.env.MONGODB_LOCAL_URI || "mongodb://localhost:27017/dichoho_app";
+const DB_NAME = process.env.MONGODB_DB_NAME || "dichoho_app";
 
 
 // Middleware
@@ -100,8 +101,8 @@ async function connectWithFallback() {
   if (ATLAS_URI) {
     try {
       //console.log(ATLAS_URI);
-      await mongoose.connect(ATLAS_URI);
-      console.log("MongoDB connected to Atlas");
+      await mongoose.connect(ATLAS_URI, { dbName: DB_NAME });
+      console.log(`MongoDB connected to Atlas using database: ${DB_NAME}`);
       return;
     } catch (err) {
       console.warn("Failed to connect to Atlas MongoDB:", err.message);
@@ -109,8 +110,8 @@ async function connectWithFallback() {
   }
 
   try {
-    await mongoose.connect(LOCAL_URI);
-    console.log("MongoDB connected to local instance");
+    await mongoose.connect(LOCAL_URI, { dbName: DB_NAME });
+    console.log(`MongoDB connected to local instance using database: ${DB_NAME}`);
   } catch (err) {
     console.error("Failed to connect to MongoDB (Atlas and local):", err.message);
     throw err;

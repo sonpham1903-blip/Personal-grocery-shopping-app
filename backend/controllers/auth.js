@@ -37,7 +37,9 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
   try {
     // Kiểm tra nếu username tồn tại
+
     const user = await User.findOne({ username: req.body.username });
+    console.log("Đăng nhập: Tìm thấy user:", user);
     if (!user) return res.status(404).json("Sai tên đăng nhập hoặc mật khẩu");
     if (user.status === 2)
       return res.status(403).json("Tài khoản chưa kích hoạt");

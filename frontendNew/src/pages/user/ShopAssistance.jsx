@@ -152,7 +152,7 @@ const ShopAssistance = () => {
     : 0;
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans bg-gradient-to-br from-green-50 via-emerald-50 to-green-200">
       <Promotion />
       <Header />
       <Navbar />

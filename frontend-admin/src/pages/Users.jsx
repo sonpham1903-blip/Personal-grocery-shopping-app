@@ -118,6 +118,22 @@ const Users = () => {
       toast.error(error.response ? error.response.data : "Network Error!");
     }
   };
+  
+  const handleDeleteAccount = async (user) => {
+    if (!window.confirm("Bạn có chắc muốn xóa tài khoản này?")) return;
+    try {
+      const res = await ktsRequest.delete(`/users/${user._id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success(res.data);
+      setRefresh(true);
+    } catch (error) {    
+        toast.error(error.response ? error.response.data : "Network Error!");
+    }
+  };
 
   return (
     <div className="p-3 text-xs md:text-base">
@@ -218,6 +234,12 @@ const Users = () => {
                       onClick={() => handleLockAccount(user)}
                     >
                       {isLocked ? "Mở khóa" : "Khóa"}
+                    </button>
+                    <button
+                      className="p-1.5 bg-white rounded border border-gray-400 text-gray-500 hover:border-gray-500 hover:bg-gray-500 hover:text-white"
+                      onClick={() => handleDeleteAccount(user)}
+                    >
+                      Xóa tài khoản
                     </button>
                   </div>
                 </div>

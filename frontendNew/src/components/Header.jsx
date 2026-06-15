@@ -207,9 +207,8 @@ const Header = () => {
     );
   };
   return (
-    <div className="max-w-screen-xl mx-auto text-center flex items-center justify-between py-3 gap-2 px-3 md:px-0">
-      {" "}
-      <div className="max-w-screen-xl mx-auto text-center flex items-center justify-between py-3 gap-2 px-3 md:px-0">
+    <div className="w-full">
+      <div className="max-w-screen-xl mx-auto sticky top-0 z-40 text-center flex items-center justify-between py-3 gap-2 px-3 md:px-0 bg-primary">
         {toggle && <Sidebar open={toggle} close={setToggle} />}
         {activeChat && (
           <Chat me={currentUser} shop={activeChat} onClose={setActiveChat} />

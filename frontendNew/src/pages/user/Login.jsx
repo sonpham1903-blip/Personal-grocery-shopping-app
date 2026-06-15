@@ -11,15 +11,6 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   if (currentUser) return navigate("/dashboard");
-  //   if (currentMsg) {
-  //     toast.warn(currentMsg);
-  //     dispatch(setMsg(null));
-  //   }
-  //   <ToastContainer />;
-  // }, []);
-
   const handleLogin = async (e) => {
     e.preventDefault();
     dispatch(loginStart());
@@ -28,6 +19,10 @@ const Login = () => {
         username: name,
         password,
       });
+      if(res.status !== 200) {
+        toast.error(res.data);
+        return dispatch(loginFailure());
+      }
       dispatch(loginSuccess(res.data));
       navigate(-1);
     } catch (err) {

@@ -9,49 +9,109 @@ const About = () => {
       <Header />
       <Navbar />
 
-      <div className="max-w-screen-xl mx-auto p-6 bg-white mt-6">
-        <h1 className="text-3xl font-bold mb-4">Giới Thiệu</h1>
+      <main className="bg-gray-50 py-8">
+        <section className="max-w-screen-xl mx-auto bg-gradient-to-r from-green-100 to-white rounded-lg p-8 shadow-md flex flex-col md:flex-row items-center gap-6">
+          <div className="md:w-2/3">
+            <h1 className="text-4xl font-extrabold text-green-700 mb-3">
+              Chào mừng đến với cửa hàng OCOP của chúng tôi
+            </h1>
+            <p className="text-lg text-gray-700 mb-4">
+              Chúng tôi chuyên cung cấp các sản phẩm nông sản sạch, OCOP và các
+              mặt hàng an toàn, tươi ngon và có nguồn gốc rõ ràng cho bữa cơm
+              gia đình .
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/products"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Xem sản phẩm
+              </Link>
+            </div>
+          </div>
+          <div className="md:w-1/3">
+            <img
+              src="/camoiloangchoi_files/animate.css"
+              alt="OCOP"
+              className="w-full rounded-md object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          </div>
+        </section>
 
-        <p className="mb-4 text-lg">
-          Chào mừng bạn đến với cửa hàng trực tuyến của chúng tôi — nơi chuyên bán
-          các sản phẩm dành cho đi chợ hàng ngày, tập trung vào các sản phẩm OCOP
-          chất lượng cao từ các làng nghề và hợp tác xã địa phương.
-        </p>
+        <section className="max-w-screen-xl mx-auto px-4 mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-5 rounded-lg shadow-sm">
+            <h3 className="font-semibold text-lg mb-2">Sản phẩm OCOP</h3>
+            <p className="text-gray-600 text-sm">
+              Đặc sản địa phương có chứng nhận, giữ hương vị vùng miền và hỗ trợ
+              cộng đồng.
+            </p>
+          </div>
+          <div className="bg-white p-5 rounded-lg shadow-sm">
+            <h3 className="font-semibold text-lg mb-2">Giao hàng an toàn</h3>
+            <p className="text-gray-600 text-sm">
+              Đóng gói chuyên nghiệp, giao nhanh trong khu vực.
+            </p>
+          </div>
+          <div className="bg-white p-5 rounded-lg shadow-sm">
+            <h3 className="font-semibold text-lg mb-2">Hỗ trợ khách hàng</h3>
+            <p className="text-gray-600 text-sm">
+              Tư vấn chọn hàng và chuẩn bị bữa ăn theo yêu cầu.
+            </p>
+          </div>
+        </section>
 
-        <h2 className="text-2xl font-semibold mb-3">Tôn chỉ hoạt động</h2>
-        <ul className="list-disc pl-6 mb-4">
-          <li>Hỗ trợ sản phẩm sạch, an toàn cho gia đình bạn.</li>
-          <li>
-            Ưu tiên sản phẩm OCOP — đặc sản địa phương có nguồn gốc, chứng nhận
-            và giá trị văn hoá vùng miền.
-          </li>
-          <li>Giao hàng nhanh, đóng gói an toàn và dịch vụ khách hàng thân thiện.</li>
-        </ul>
+        <section className="max-w-screen-xl mx-auto px-4 mt-10 bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold mb-4">
+            Hướng dẫn sử dụng chức năng "ĐI CHỢ HỘ"
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Chức năng "ĐI CHỢ HỘ" giúp bạn lên thực đơn và chuẩn bị nguyên liệu
+            phù hợp dựa trên số người, ngân sách và sở thích. Thao tác rất đơn
+            giản:
+          </p>
 
-        <h2 className="text-2xl font-semibold mb-3">Sản phẩm OCOP — Vì sao nên chọn</h2>
-        <p className="mb-4">
-          OCOP (One Commune One Product) là chương trình thúc đẩy sản xuất đặc
-          sản địa phương với tiêu chí chất lượng và giá trị cộng đồng. Sản phẩm
-          OCOP thường được chế biến hoặc sản xuất thủ công, giữ bản sắc vùng
-          miền và có lợi ích kinh tế cho các hộ gia đình địa phương.
-        </p>
+          <ul className="list-none space-y-3 text-gray-700">
+            <li>
+              <strong>Bước 1:</strong> Mở chức năng bằng cách nhấn nút "ĐI CHỢ
+              HỘ".
+            </li>
+            <li>
+              <strong>Bước 2:</strong> Cung cấp 3 thông tin cơ bản khi được hỏi:{" "}
+              <em>số người ăn</em>, <em>ngân sách (VNĐ)</em> và{" "}
+              <em>sở thích/món ăn</em>.
+            </li>
+            <li>
+              <strong>Bước 3:</strong> Chờ trợ lý đề xuất thực đơn và danh sách
+              nguyên liệu chính. Bạn có thể chỉnh sửa hoặc yêu cầu thay thế.
+            </li>
+            <li>
+              <strong>Bước 4:</strong> Chỉnh sửa các sản phẩm gợi ý để thêm vào
+              giỏ hàng và tiến hành thanh toán hoặc yêu cầu giao hàng.
+            </li>
+          </ul>
 
-        <h2 className="text-2xl font-semibold mb-3">Lợi ích khi mua tại chúng tôi</h2>
-        <ul className="list-disc pl-6 mb-4">
-          <li>Đa dạng mặt hàng đi chợ: rau củ, thực phẩm, đồ uống, dược liệu.</li>
-          <li>Ưu đãi dành cho khách hàng thường xuyên và đơn hàng lớn.</li>
-          <li>Hỗ trợ tìm nguồn hàng OCOP theo yêu cầu.</li>
-        </ul>
+          <div className="mt-6">
+            <Link
+              to="/shopassistance"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
+            >
+              ĐI CHỢ HỘ
+            </Link>
+          </div>
+        </section>
 
-        <div className="mt-6">
-          <Link
-            to="/products"
-            className="inline-block bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
-          >
-            Xem sản phẩm ngay
-          </Link>
-        </div>
-      </div>
+        <section className="max-w-screen-xl mx-auto px-4 mt-8 bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-2xl font-semibold mb-3">Tầm nhìn và Cam kết</h2>
+          <p className="text-gray-700">
+            Chúng tôi cam kết mang tới sản phẩm tươi sạch, hỗ trợ nhà sản xuất
+            địa phương và minh bạch trong nguồn gốc hàng hóa. Mọi phản hồi của
+            bạn đều giúp cửa hàng ngày càng tốt hơn.
+          </p>
+        </section>
+      </main>
 
       <Footer />
     </div>

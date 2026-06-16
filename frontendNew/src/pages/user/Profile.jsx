@@ -6,6 +6,7 @@ import { vnd } from "../../../ultis/ktsFunc";
 import ktsRequest from "../../../ultis/ktsrequest";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../../redux/userSlice";
+import { uploadSingleFile } from "../../../ultis/handleFile";
 
 const STATUS_LABEL = {
   0: "Chờ xác nhận",
@@ -24,6 +25,7 @@ const Profile = () => {
   const [updatingOrderId, setUpdatingOrderId] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [profileData, setProfileData] = useState({
     fullname: "",
     phone: "",
@@ -32,6 +34,7 @@ const Profile = () => {
     cityName: "",
     districtName: "",
     wardName: "",
+    img: "",
   });
 
   useEffect(() => {
@@ -44,6 +47,7 @@ const Profile = () => {
         cityName: currentUser.cityName || "",
         districtName: currentUser.districtName || "",
         wardName: currentUser.wardName || "",
+        img: currentUser.img || "",
       });
     }
   }, [currentUser]);
@@ -129,6 +133,29 @@ const Profile = () => {
     setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileUpload = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      uploadImage(selectedFile);
+    }
+  };
+
+  const uploadImage = async (fileToUpload) => {
+    try {
+      setUploadingAvatar(true);
+      const downloadURL = await uploadSingleFile(
+        fileToUpload,
+        `users/${currentUser._id}`,
+      );
+      setProfileData((prev) => ({ ...prev, img: downloadURL }));
+      toast.success("Tải ảnh thành công");
+    } catch (error) {
+      toast.error(error.message || "Tải ảnh thất bại");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
@@ -167,13 +194,59 @@ const Profile = () => {
       <div className="mx-auto max-w-screen-xl px-3 py-6">
         <div className="mb-6 rounded-lg bg-white p-5 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Trang cá nhân
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Quản lý thông tin cơ bản và theo dõi đơn hàng của bạn.
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="relative group">
+                <div className="w-16 h-16 rounded-full border-2 border-gray-300 overflow-hidden flex justify-center items-center text-gray-400 text-xl font-bold bg-gray-100">
+                  {profileData.img ? (
+                    <img
+                      src={profileData.img}
+                      alt={profileData.fullname || "Avatar"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    (profileData.fullname || currentUser.displayName || currentUser.username || "A")
+                      .charAt(0)
+                      .toUpperCase()
+                  )}
+                </div>
+                {isEditing && (
+                  <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="white"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                      />
+                    </svg>
+                    <input
+                      type="file"
+                      hidden
+                      onChange={handleFileUpload}
+                      accept="image/*"
+                    />
+                  </label>
+                )}
+                {uploadingAvatar && (
+                  <div className="absolute -bottom-1 left-0 w-full h-1 bg-gray-200 rounded overflow-hidden">
+                    <div className="h-full w-full bg-primary animate-pulse"></div>
+                  </div>
+                )}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Trang cá nhân
+                </h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  Quản lý thông tin cơ bản và theo dõi đơn hàng của bạn.
+                </p>
+              </div>
             </div>
             {!isEditing && (
               <button

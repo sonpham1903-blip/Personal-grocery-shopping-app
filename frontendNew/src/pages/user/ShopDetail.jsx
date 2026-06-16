@@ -6,6 +6,29 @@ import ktsRequest from "../../../ultis/ktsrequest";
 import { vnd } from "../../../ultis/ktsFunc";
 import { Footer, Header, Navbar, Promotion } from "../../components";
 
+const avatarColors = [
+  "bg-orange-500",
+  "bg-emerald-500",
+  "bg-cyan-500",
+  "bg-fuchsia-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-lime-500",
+  "bg-amber-500",
+  "bg-rose-500",
+];
+
+const getAvatarColor = (seed = "") => {
+  if (!seed) return avatarColors[0];
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return avatarColors[hash % avatarColors.length];
+};
+
+const getAvatarText = (text = "") => {
+  if (!text) return "S";
+  return text.trim().charAt(0).toUpperCase();
+};
+
 const ShopDetail = () => {
   const { shopId } = useParams();
   const navigate = useNavigate();
@@ -95,11 +118,21 @@ const ShopDetail = () => {
             <div className="-mt-10 px-4 pb-6 md:px-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div className="flex items-end gap-4">
-                  <img
-                    src={shop?.img || "https://via.placeholder.com/160.png?text=Shop"}
-                    alt={shop?.displayName || shop?.username || "Shop"}
-                    className="h-20 w-20 rounded-2xl border-4 border-white object-cover shadow-md"
-                  />
+                  {shop?.img ? (
+                    <img
+                      src={shop.img}
+                      alt={shop?.displayName || shop?.username || "Shop"}
+                      className="h-20 w-20 rounded-2xl border-4 border-white object-cover shadow-md"
+                    />
+                  ) : (
+                    <div
+                      className={`h-20 w-20 rounded-2xl border-4 border-white flex items-center justify-center text-white text-2xl font-bold shadow-md ${getAvatarColor(
+                        shop?.displayName || shop?.username || "Shop",
+                      )}`}
+                    >
+                      {getAvatarText(shop?.displayName || shop?.username || "Shop")}
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm uppercase tracking-widest text-gray-500">
                       Thông tin cửa hàng

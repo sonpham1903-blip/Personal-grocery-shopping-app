@@ -3,6 +3,29 @@ import { Link } from "react-router-dom";
 import { Footer, Header, Navbar, Promotion } from "../../components";
 import ktsRequest from "../../../ultis/ktsrequest";
 
+const avatarColors = [
+  "bg-orange-500",
+  "bg-emerald-500",
+  "bg-cyan-500",
+  "bg-fuchsia-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-lime-500",
+  "bg-amber-500",
+  "bg-rose-500",
+];
+
+const getAvatarColor = (seed = "") => {
+  if (!seed) return avatarColors[0];
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return avatarColors[hash % avatarColors.length];
+};
+
+const getAvatarText = (text = "") => {
+  if (!text) return "S";
+  return text.trim().charAt(0).toUpperCase();
+};
+
 const Shops = () => {
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,14 +103,17 @@ const Shops = () => {
                   className="group overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <div className="h-44 w-full overflow-hidden bg-green-50">
-                    <img
-                      src={
-                        shop.img ||
-                        "https://via.placeholder.com/400x280.png?text=Shop"
-                      }
-                      alt={shop.displayName || shop.username || "Shop"}
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    />
+                    {shop.img ? (
+                      <img
+                        src={shop.img}
+                        alt={shop.displayName || shop.username || "Shop"}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className={`h-full w-full flex items-center justify-center text-white text-5xl font-bold ${getAvatarColor(shop.displayName || shop.username || "Shop")}`}>
+                        {getAvatarText(shop.displayName || shop.username)}
+                      </div>
+                    )}
                   </div>
                   <div className="p-5">
                     <h2 className="text-xl font-semibold text-gray-900">

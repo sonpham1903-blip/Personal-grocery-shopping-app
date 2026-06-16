@@ -5,6 +5,7 @@ import Home from "./pages/user/Home";
 import Products from "./pages/user/Products";
 import Product from "./pages/user/Product";
 import ShopDetail from "./pages/user/ShopDetail";
+import Shops from "./pages/user/Shops";
 import Posts from "./pages/user/Posts";
 import PostsDetail from "./pages/user/PostsDetail";
 import About from "./pages/user/About";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:productId" element={<Product />} />
           <Route path="/shop/:shopId" element={<ShopDetail />} />
+          <Route path="/shops" element={<Shops />} />
           <Route path="/posts" element={<Posts />} />
           <Route path="/posts/:postId" element={<PostsDetail />} />
           <Route path="/news" element={<Navigate to="/posts" replace />} />

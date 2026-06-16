@@ -1,9 +1,10 @@
 export const ktsConfig = {
   navLinks: [
     { title: "trang chủ", path: "/" },
-    { title: "đi chợ hộ", path: "/shopassistance" },
     { title: "giới thiệu", path: "/about" },
+    { title: "đi chợ hộ", path: "/shopassistance" },
     { title: "sản phẩm", path: "/products" },
+    { title: "shop", path: "/shops" },
     { title: "tin tức", path: "/posts" },
   ],
   categories: [

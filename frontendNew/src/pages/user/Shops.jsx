@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Footer, Header, Navbar, Promotion } from "../../components";
 import ktsRequest from "../../../ultis/ktsrequest";
 
 const Shops = () => {
+  const { currentUser } = useSelector((state) => state.user);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +25,7 @@ const Shops = () => {
     };
 
     fetchShops();
-  }, []);
+  }, [currentUser]);
 
   return (
     <div>
@@ -43,6 +45,66 @@ const Shops = () => {
               phẩm địa phương.
             </p>
           </div>
+
+          {currentUser && (
+            <div className="mb-6 rounded-2xl border border-green-100 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium uppercase tracking-[0.24em] text-green-700">
+                Đã follow
+              </p>
+              <p className="mt-2 text-gray-600">
+                Danh sách shop bạn đã follow. Nếu chưa follow shop nào, bạn có
+                thể khám phá bên dưới.
+              </p>
+              <div className="mt-6">
+                {loading ? (
+                  <p className="text-sm text-gray-500">
+                    Đang tải danh sách theo dõi...
+                  </p>
+                ) : shops.filter((shop) =>
+                    shop.likedBy?.includes(currentUser._id || currentUser.id),
+                  ).length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    Bạn chưa follow shop nào.
+                  </p>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {shops
+                      .filter((shop) =>
+                        shop.likedBy?.includes(
+                          currentUser._id || currentUser.id,
+                        ),
+                      )
+                      .map((shop) => (
+                        <Link
+                          to={`/shop/${shop._id}`}
+                          key={shop._id}
+                          className="group overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                        >
+                          <div className="h-44 w-full overflow-hidden bg-green-50">
+                            <img
+                              src={
+                                shop.img ||
+                                "https://via.placeholder.com/400x280.png?text=Shop"
+                              }
+                              alt={shop.displayName || shop.username || "Shop"}
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                          <div className="p-5">
+                            <h3 className="text-xl font-semibold text-gray-900">
+                              {shop.displayName || shop.username || "Cửa hàng"}
+                            </h3>
+                            <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                              {shop.address || "Chưa cập nhật địa chỉ"}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <div className="flex h-56 items-center justify-center rounded-2xl bg-white shadow-sm">
@@ -96,6 +158,14 @@ const Shops = () => {
                     <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                       {shop.address || "Chưa cập nhật địa chỉ"}
                     </p>
+                    {currentUser &&
+                      shop.likedBy?.includes(
+                        currentUser._id || currentUser.id,
+                      ) && (
+                        <span className="mt-3 inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                          Đã follow
+                        </span>
+                      )}
                   </div>
                 </Link>
               ))}

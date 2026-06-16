@@ -31,7 +31,7 @@ const Shops = () => {
       <Header />
       <Navbar />
 
-      <main className="bg-gray-50 py-8">
+      <main className="min-h-screen bg-gradient-to-b from-green-50 to-white py-8">
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm">
             <p className="text-sm font-medium uppercase tracking-[0.24em] text-green-700">

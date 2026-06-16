@@ -111,12 +111,6 @@ const Login = () => {
                 )}
               </button>
               <div className="flex items-center justify-between">
-                <a
-                  href="https://dichoho.top"
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  Trang chủ
-                </a>
                 <p className="text-sm font-light text-gray-500">
                   Chưa có tài khoản?
                   <Link

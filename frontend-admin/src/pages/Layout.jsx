@@ -23,6 +23,10 @@ import { useSelector } from "react-redux";
 const Layout = () => {
   const { currentUser } = useSelector((state) => state.user);
   const isAdmin = currentUser?.role === "admin";
+  
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex relative">

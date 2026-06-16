@@ -78,7 +78,7 @@ const SinglePost = () => {
               <h3 className="text-3xl font-bold">{post?.title}</h3>
               <div>
                 <span className="text-red-500 font-semibold">
-                  {post?.author || "dichoho.top"},
+                  {post?.author || "admin"},
                 </span>
                 <span className="">
                   <svg

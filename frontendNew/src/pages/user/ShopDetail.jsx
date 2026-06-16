@@ -37,7 +37,12 @@ const ShopDetail = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [shopData, setShopData] = useState({ shop: null, products: [], productsCount: 0 });
+  const [showChat, setShowChat] = useState(false);
+  const [shopData, setShopData] = useState({
+    shop: null,
+    products: [],
+    productsCount: 0,
+  });
 
   useEffect(() => {
     const fetchShop = async () => {
@@ -47,15 +52,18 @@ const ShopDetail = () => {
         setShopData({
           shop: res.data.shop,
           products: res.data.products || [],
-          productsCount: res.data.productsCount ?? (res.data.products || []).length,
+          productsCount:
+            res.data.productsCount ?? (res.data.products || []).length,
         });
-        
+
         // Check if current user is following this shop
         if (currentUser && res.data.shop?.likedBy) {
-          const isFollowingShop = res.data.shop.likedBy.includes(currentUser._id || currentUser.id);
+          const isFollowingShop = res.data.shop.likedBy.includes(
+            currentUser._id || currentUser.id,
+          );
           setIsFollowing(isFollowingShop);
         }
-        
+
         // Set followers count
         setFollowersCount(res.data.shop?.likedBy?.length || 0);
       } catch (err) {
@@ -82,7 +90,7 @@ const ShopDetail = () => {
         await ktsRequest.put(
           `/users/unfollow/${shopId}`,
           {},
-          { headers: { Authorization: `Bearer ${currentUser.token}` } }
+          { headers: { Authorization: `Bearer ${currentUser.token}` } },
         );
         setIsFollowing(false);
         setFollowersCount((prev) => Math.max(0, prev - 1));
@@ -92,7 +100,7 @@ const ShopDetail = () => {
         await ktsRequest.put(
           `/users/follow/${shopId}`,
           {},
-          { headers: { Authorization: `Bearer ${currentUser.token}` } }
+          { headers: { Authorization: `Bearer ${currentUser.token}` } },
         );
         setIsFollowing(true);
         setFollowersCount((prev) => prev + 1);
@@ -173,9 +181,25 @@ const ShopDetail = () => {
                   >
                     {isFollowLoading ? (
                       <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         {isFollowing ? "Hủy follow..." : "Follow..."}
                       </span>
@@ -183,21 +207,66 @@ const ShopDetail = () => {
                       <span className="flex items-center justify-center gap-2">
                         {isFollowing ? (
                           <>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
-                              <path d="M12 1l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 1z"/>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                              className="w-4 h-4"
+                            >
+                              <path d="M12 1l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 1z" />
                             </svg>
                             Đang theo dõi
                           </>
                         ) : (
                           <>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-4 h-4"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 4.5v15m7.5-7.5h-15"
+                              />
                             </svg>
                             Follow
                           </>
                         )}
                       </span>
                     )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        toast.info("Vui lòng đăng nhập để nhắn tin");
+                        navigate("/login");
+                        return;
+                      }
+                      setShowChat(true);
+                    }}
+                    className="px-6 py-2 rounded-lg font-semibold text-green-700 transition border border-green-600 bg-white hover:bg-green-50 w-full md:w-auto"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-4 h-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M7.5 8.25h9m-9 3H12m0 6.75h4.125a2.625 2.625 0 002.625-2.625V6.375A2.625 2.625 0 0016.125 3.75H7.5A2.625 2.625 0 004.875 6.375v9.375A2.625 2.625 0 007.5 18.375z"
+                        />
+                      </svg>
+                      Nhắn tin
+                    </span>
                   </button>
                 </div>
               </div>
@@ -216,7 +285,9 @@ const ShopDetail = () => {
             {loading ? (
               <p className="text-sm text-gray-500">Đang tải dữ liệu...</p>
             ) : shopData.products.length === 0 ? (
-              <p className="text-sm text-gray-500">Shop chưa có sản phẩm nào.</p>
+              <p className="text-sm text-gray-500">
+                Shop chưa có sản phẩm nào.
+              </p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {shopData.products.map((product) => (
@@ -226,7 +297,10 @@ const ShopDetail = () => {
                     className="overflow-hidden rounded-xl border border-green-100 bg-green-50 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                   >
                     <img
-                      src={product.imgs?.[0] || "https://via.placeholder.com/300.png?text=Product"}
+                      src={
+                        product.imgs?.[0] ||
+                        "https://via.placeholder.com/300.png?text=Product"
+                      }
                       alt={product.productName}
                       className="h-44 w-full object-cover"
                     />
@@ -236,7 +310,9 @@ const ShopDetail = () => {
                       </h3>
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-semibold text-primary">
-                          {product.stockPrice > 0 ? vnd(product.currentPrice) : "Liên hệ"}
+                          {product.stockPrice > 0
+                            ? vnd(product.currentPrice)
+                            : "Liên hệ"}
                         </span>
                         <span className="text-gray-500">
                           Còn {product.inStock || 0}
@@ -250,6 +326,9 @@ const ShopDetail = () => {
           </div>
         </div>
       </div>
+      {showChat && (
+        <Chat shop={shopId} me={currentUser} onClose={setShowChat} />
+      )}
       <Footer />
     </div>
   );

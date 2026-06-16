@@ -104,14 +104,17 @@ const Shops = () => {
                           className="group overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                         >
                           <div className="h-44 w-full overflow-hidden bg-green-50">
-                            <img
-                              src={
-                                shop.img ||
-                                "https://via.placeholder.com/400x280.png?text=Shop"
-                              }
-                              alt={shop.displayName || shop.username || "Shop"}
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                            />
+                            {shop.img ? (
+                              <img
+                                src={shop.img}
+                                alt={shop.displayName || shop.username || "Shop"}
+                                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className={`h-full w-full flex items-center justify-center text-white text-5xl font-bold ${getAvatarColor(shop.displayName || shop.username || "Shop")}`}>
+                                {getAvatarText(shop.displayName || shop.username)}
+                              </div>
+                            )}
                           </div>
                           <div className="p-5">
                             <h3 className="text-xl font-semibold text-gray-900">

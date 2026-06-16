@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import ktsRequest from "../../../ultis/ktsrequest";
 import { vnd } from "../../../ultis/ktsFunc";
-import { Footer, Header, Navbar, Promotion } from "../../components";
+import { Footer, Header, Navbar, Promotion, Chat } from "../../components";
 
 const avatarColors = [
   "bg-orange-500",
@@ -138,7 +138,9 @@ const ShopDetail = () => {
                         shop?.displayName || shop?.username || "Shop",
                       )}`}
                     >
-                      {getAvatarText(shop?.displayName || shop?.username || "Shop")}
+                      {getAvatarText(
+                        shop?.displayName || shop?.username || "Shop",
+                      )}
                     </div>
                   )}
                   <div>

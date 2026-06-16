@@ -65,7 +65,6 @@ const Register = () => {
                   name="username"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
                   placeholder="Username"
-                  required
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
@@ -79,7 +78,6 @@ const Register = () => {
                   name="phone"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
                   placeholder="Số điện thoại"
-                  required
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
@@ -93,7 +91,6 @@ const Register = () => {
                   name="password"
                   placeholder="••••••••"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-                  required
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
@@ -107,7 +104,6 @@ const Register = () => {
                   name="confirmPassword"
                   placeholder="••••••••"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-                  required
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>

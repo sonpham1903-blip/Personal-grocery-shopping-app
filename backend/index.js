@@ -24,6 +24,7 @@ import {
 import chatRoute from "./routes/chat.js";
 import messageRoute from "./routes/message.js";
 import assistantRoute from "./routes/assistant.js";
+import reportRoute from "./routes/report.js";
 
 dotenv.config();
 
@@ -75,6 +76,7 @@ app.use("/good-receipts", goodReceiptRoute);
 app.use("/chat", chatRoute);
 app.use("/messages", messageRoute);
 app.use("/assistant", assistantRoute);
+app.use("/reports", reportRoute);
 
 // Simple visitor count endpoint (used by frontend to record page visits)
 app.get("/count", async (req, res) => {

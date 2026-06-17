@@ -15,4 +15,5 @@ export { default as NewPost } from "./NewPost";
 export { default as EditPost } from "./EditPost";
 export { default as GoodReceipts } from "./GoodReceipts";
 export { default as Messages } from "./Messages";
+export { default as Reports } from "./Reports";
 

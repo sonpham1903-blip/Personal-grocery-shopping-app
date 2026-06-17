@@ -47,6 +47,14 @@ const ReportSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    shopID: {
+      type: String,
+      default: null,
+    },
+    date: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

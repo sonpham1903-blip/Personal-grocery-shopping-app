@@ -72,7 +72,7 @@ const Layout = () => {
               <Route index element={<Profile />} />
               {/* <Route path=":userId" element={<EditUser />} /> */}
             </Route>
-            <Route path="don-hang" element={isAdmin ? <Navigate to="san-pham" replace /> : <Orders />} />
+            <Route path="don-hang" element={<Orders />} />
             <Route path="tin-nhan" element={<Messages />} />
             <Route path="thong-ke" element={<Reports />} />
             <Route path="bai-viet">

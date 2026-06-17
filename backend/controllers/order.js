@@ -486,7 +486,9 @@ export const cancel = async (req, res, next) => {
       return res
         .status(403)
         .json("Bạn không được cấp quyền thực hiện chức năng này!");
-    if (order.status > 0)
+    if (order.status >= ORDER_STATUS.DELIVERED)
+      return res.status(403).json("Đơn hàng đã giao, không thể hủy đơn");
+    if (!permistion.includes(req.user.role) && order.status > 0)
       return res.status(403).json("Trạng thái đơn hàng không cho phép hủy đơn");
 
     await Promise.all(

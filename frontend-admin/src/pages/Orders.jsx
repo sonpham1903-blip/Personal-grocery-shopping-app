@@ -91,8 +91,9 @@ const Orders = () => {
           },
         };
 
+        const ordersPath = currentUser?.role === "admin" ? "/orders" : "/orders/my-orders";
         const [ordersResult, receiptsResult] = await Promise.allSettled([
-          ktsRequest.get("/orders/my-orders", requestConfig),
+          ktsRequest.get(ordersPath, requestConfig),
           currentUser?.role === "shop"
             ? ktsRequest.get(`/good-receipts/shop/${currentUser._id}`)
             : ktsRequest.get("/good-receipts"),
@@ -170,6 +171,27 @@ const Orders = () => {
           shippingOrderCode: draft.shippingOrderCode || "",
           note: draft.note || "",
         },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(res.data);
+      setRefresh(true);
+    } catch (err) {
+      err.response
+        ? toast.error(err.response.data)
+        : toast.error("Network Error!");
+    }
+  };
+
+  const handleCancel = async (orderId) => {
+    try {
+      const res = await ktsRequest.post(
+        `/orders/${orderId}/cancel`,
+        {},
         {
           headers: {
             "Content-Type": "application/json",
@@ -310,6 +332,15 @@ const Orders = () => {
                         onClick={() => handleUpdateStatus(o._id, 1)}
                       >
                         Xác nhận đơn hàng
+                      </button>
+                    )}
+
+                    {currentUser?.role === "admin" && st < 3 && (
+                      <button
+                        className="w-full rounded border border-red-600 bg-red-50 px-2 py-1 text-red-700 hover:bg-red-600 hover:text-white"
+                        onClick={() => handleCancel(o._id)}
+                      >
+                        Hủy đơn hàng
                       </button>
                     )}
 

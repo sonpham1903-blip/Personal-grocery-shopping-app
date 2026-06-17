@@ -184,14 +184,6 @@ const ShopAssistance = () => {
                 của gia đình bạn.
               </p>
             </div>
-            <div className="flex gap-3">
-              <span className="bg-white/20 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-                🤖 Gemini 3.5 Native
-              </span>
-              <span className="bg-white/20 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-                ⚖️ MongoDB Scoring
-              </span>
-            </div>
           </div>
 
           {/* Workspace Layout: Split Screen */}

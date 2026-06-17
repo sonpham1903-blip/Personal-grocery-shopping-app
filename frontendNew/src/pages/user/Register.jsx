@@ -13,7 +13,7 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     if (!username || !phone || !password || !confirmPassword) {
       return toast.error("Vui lòng điền đầy đủ thông tin");
     }
@@ -51,53 +51,59 @@ const Register = () => {
         <div className="w-full rounded-lg bg-white shadow border border-primary sm:max-w-md md:mt-0 xl:p-0">
           <div className="space-y-4 p-6 sm:p-8 md:space-y-6">
             <div className="flex justify-center">
-              <h3 className="uppercase font-bold text-xl text-primary">đăng ký tài khoản</h3>
+              <h3 className="uppercase font-bold text-xl text-primary">
+                đăng ký tài khoản
+              </h3>
             </div>
             <form className="space-y-4 md:space-y-6" onSubmit={handleRegister}>
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900">Tên đăng nhập</label>
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Tên đăng nhập
+                </label>
                 <input
                   type="text"
                   name="username"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
                   placeholder="Username"
-                  required
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900">Số điện thoại</label>
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Số điện thoại
+                </label>
                 <input
                   type="text"
                   name="phone"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
                   placeholder="Số điện thoại"
-                  required
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900">Mật khẩu</label>
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Mật khẩu
+                </label>
                 <input
                   type="password"
                   name="password"
                   placeholder="••••••••"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-                  required
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900">Xác nhận mật khẩu</label>
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Xác nhận mật khẩu
+                </label>
                 <input
                   type="password"
                   name="confirmPassword"
                   placeholder="••••••••"
                   className="block w-full rounded border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-                  required
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
@@ -105,7 +111,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full uppercase rounded bg-primary px-5 py-3 text-center text-sm font-medium text-white hover:bg-opacity-90 focus:outline-none focus:ring ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full uppercase rounded bg-blue-600 px-5 py-3 text-center text-sm font-medium text-white hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 ${loading ? "opacity-75 cursor-not-allowed" : "cursor-pointer"}`}
               >
                 {loading ? "Đang xử lý..." : "Đăng ký"}
               </button>

@@ -4,16 +4,27 @@ import { toast } from "react-toastify";
 const Modal = (props) => {
   const handleAction = async () => {
     try {
-      const res = await ktsRequest.put(
-        `${props.to}/${props.data._id}`,
-        { ...props.data, ...props.editedData },
-        {
+      const base = String(props.to || "").replace(/\/+$/g, "");
+      let res;
+      const method = String(props.method || "put").toLowerCase();
+      if (method === "delete") {
+        res = await ktsRequest.delete(`${base}/${props.data._id}`, {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${props.token}`,
           },
-        }
-      );
+        });
+      } else {
+        res = await ktsRequest.put(
+          `${base}/${props.data._id}`,
+          { ...props.data, ...props.editedData },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${props.token}`,
+            },
+          }
+        );
+      }
       toast.success(res.data, {
         onClose: () => props.refreshData(true),
       });

@@ -71,7 +71,7 @@ const NewPost = () => {
     const postData = {
       postType: type,
       title: title.trim(),
-      userName: currentUser.displayName || "dichoho.top",
+      userName: currentUser.displayName || "admin",
       content: value.trim(),
       thumbnail: url,
       productId: productId || undefined,
@@ -144,7 +144,7 @@ const NewPost = () => {
         <input
           type="text"
           className="md:w-5/6 w-full rounded border border-gray-300 bg-gray-100 p-2 text-gray-900 sm:text-sm"
-          value={currentUser.displayName || "dichoho.top"}
+          value={currentUser.displayName || "admin"}
           disabled
         />
       </div>

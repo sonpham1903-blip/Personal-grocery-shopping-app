@@ -13,21 +13,31 @@ const Header = () => {
   const { pathname } = useLocation();
   const [openMenu, setOpenMenu] = useState(false);
 
+  const avatarColors = [
+    "bg-orange-500",
+    "bg-emerald-500",
+    "bg-cyan-500",
+    "bg-fuchsia-500",
+    "bg-sky-500",
+    "bg-violet-500",
+    "bg-lime-500",
+    "bg-amber-500",
+    "bg-rose-500",
+  ];
+
+  const getAvatarColor = (seed = "") => {
+    if (!seed) return avatarColors[0];
+    const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return avatarColors[hash % avatarColors.length];
+  };
+
   useEffect(() => {
     setHeader(dashboard.navLinks.find((i) => i.path === pathname)?.title);
   }, [pathname]);
 
-  const textAvatar = (text) => {
+  const getAvatarText = (text = "") => {
     if (!text) return "A";
-    let name = text.split(" ");
-    if (name.length === 1) {
-      return name[0].charAt().toUpperCase();
-    } else {
-      return (
-        name[0].charAt(0).toUpperCase() +
-        name[name.length - 1].charAt(0).toUpperCase()
-      );
-    }
+    return text.trim().charAt(0).toUpperCase();
   };
 
   const handleLogout = () => {
@@ -47,17 +57,17 @@ const Header = () => {
           
           <div className="relative">
             <div 
-              className="rounded-full h-12 w-12 bg-orange-500 flex justify-center items-center text-white font-bold overflow-hidden border-2 border-primary cursor-pointer"
+              className={`rounded-full h-12 w-12 flex justify-center items-center text-white font-bold overflow-hidden border-2 border-primary cursor-pointer ${currentUser?.img ? "bg-slate-200" : getAvatarColor(currentUser?.displayName || currentUser?.username || "user")}`}
               onClick={() => setOpenMenu(!openMenu)}
             >
               {currentUser?.img ? (
                 <img
                   src={currentUser.img}
-                  alt=""
+                  alt={currentUser?.displayName || currentUser?.username || "Avatar"}
                   className="w-full h-full object-cover object-center"
                 />
               ) : (
-                textAvatar(currentUser?.username || currentUser?.displayName)
+                getAvatarText(currentUser?.username || currentUser?.displayName)
               )}
             </div>
 

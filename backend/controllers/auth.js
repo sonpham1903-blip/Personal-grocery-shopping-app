@@ -6,6 +6,7 @@ import { createError } from "../error.js";
 export const signup = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
+    console.log("Đăng ký: Tìm thấy user:", user);
     if (user) {
       return res.status(403).json("Tên đăng nhập đã có người sử dụng");
     }
@@ -29,15 +30,17 @@ export const signup = async (req, res, next) => {
     const newUser = new User(payload);
     await newUser.save();
     res.status(200).json("Đăng ký tài khoản thành công");
-  } catch (createError) {
-    next(createError(403, "Đăng ký tài khoản thất bại"));
+  } catch (error) {
+    next(createError(403, error.message || "Đăng ký tài khoản thất bại"));
   }
 };
 // admin, shop
 export const signin = async (req, res, next) => {
   try {
     // Kiểm tra nếu username tồn tại
+
     const user = await User.findOne({ username: req.body.username });
+    console.log("Đăng nhập: Tìm thấy user:", user);
     if (!user) return res.status(404).json("Sai tên đăng nhập hoặc mật khẩu");
     if (user.status === 2)
       return res.status(403).json("Tài khoản chưa kích hoạt");

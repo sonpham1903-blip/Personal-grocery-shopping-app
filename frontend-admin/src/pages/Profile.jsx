@@ -3,9 +3,31 @@ import { useSelector, useDispatch } from "react-redux";
 import ktsRequest from "../../ultis/ktsrequest";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { loginSuccess } from "../redux/userSlice";
 import { uploadSingleFile } from "../../ultis/handleFile";
+
+const avatarColors = [
+  "bg-orange-500",
+  "bg-emerald-500",
+  "bg-cyan-500",
+  "bg-fuchsia-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-lime-500",
+  "bg-amber-500",
+  "bg-rose-500",
+];
+
+const getAvatarColor = (seed = "") => {
+  if (!seed) return avatarColors[0];
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return avatarColors[hash % avatarColors.length];
+};
+
+const getAvatarText = (text = "") => {
+  if (!text) return "A";
+  return text.trim().charAt(0).toUpperCase();
+};
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -15,7 +37,6 @@ const Profile = () => {
 
   const [inputs, setInputs] = useState({});
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -41,7 +62,6 @@ const Profile = () => {
   const handleFileUpload = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile);
       uploadImage(selectedFile);
     }
   };
@@ -54,7 +74,6 @@ const Profile = () => {
         `users/${currentUser._id}`,
       );
       setInputs((prev) => ({ ...prev, img: downloadURL }));
-      setFile(null);
       toast.success("Tải ảnh thành công");
     } catch (error) {
       toast.error(error.message || "Tải ảnh thất bại");
@@ -124,11 +143,15 @@ const Profile = () => {
           <div className="h-32 bg-primary relative">
             <div className="absolute -bottom-16 left-8">
               <div className="relative group">
-                <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-orange-500 flex justify-center items-center text-white text-4xl font-bold">
+                <div className={`w-32 h-32 rounded-full border-4 border-white overflow-hidden flex justify-center items-center text-white text-4xl font-bold ${inputs?.img ? "bg-slate-200" : getAvatarColor(inputs?.displayName || inputs?.username || "user")}`}>
                   {inputs?.img ? (
-                    <img src={inputs.img} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={inputs.img}
+                      alt={inputs?.displayName || inputs?.username || "Avatar"}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    inputs?.username?.charAt(0).toUpperCase()
+                    getAvatarText(inputs?.displayName || inputs?.username)
                   )}
                 </div>
                 <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">

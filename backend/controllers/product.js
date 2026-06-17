@@ -73,7 +73,7 @@ export const createProduct = async (req, res, next) => {
     if (req.user?.role !== "admin") {
       delete payload.active;
     }
-    const newProduct = new Product({ shopID: req.user.id, ...payload });
+    const newProduct = new Product({ shopID: String(req.user.id), ...payload });
     await newProduct.save();
     res.status(200).json("Tạo mới sản phẩm thành công");
   } catch (error) {
@@ -150,7 +150,7 @@ export const getMyProducts = async (req, res, next) => {
     const isAdmin = req.user?.role === "admin";
     const products = isAdmin
       ? await Product.find()
-      : await Product.find({ shopID: req.user.id });
+      : await Product.find({ shopID: String(req.user.id) });
 
     const list = products.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
@@ -186,7 +186,7 @@ export const updateProduct = async (req, res, next) => {
     } else {
       const isAdmin = req.user?.role === "admin";
       const isShopOwner =
-        req.user?.role === "shop" && product.shopID === req.user?.id;
+        req.user?.role === "shop" && String(product.shopID) === String(req.user?.id);
       const updateData = normalizeProductPayload(req.body);
       delete updateData.inStock;
 
@@ -217,7 +217,7 @@ export const deleteProduct = async (req, res, next) => {
     } else {
       const isAdmin = req.user?.role === "admin";
       const isShopOwner =
-        req.user?.role === "shop" && product.shopID === req.user?.id;
+        req.user?.role === "shop" && String(product.shopID) === String(req.user?.id);
 
       if (isAdmin || isShopOwner) {
         await Product.findByIdAndDelete(req.params.id);

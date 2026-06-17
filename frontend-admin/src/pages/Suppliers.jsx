@@ -3,6 +3,29 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import ktsRequest from "../../ultis/ktsrequest";
 
+const avatarColors = [
+  "bg-orange-500",
+  "bg-emerald-500",
+  "bg-cyan-500",
+  "bg-fuchsia-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-lime-500",
+  "bg-amber-500",
+  "bg-rose-500",
+];
+
+const getAvatarColor = (seed = "") => {
+  if (!seed) return avatarColors[0];
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return avatarColors[hash % avatarColors.length];
+};
+
+const getAvatarText = (text = "") => {
+  if (!text) return "S";
+  return text.trim().charAt(0).toUpperCase();
+};
+
 const Suppliers = () => {
   const [data, setData] = useState([]);
   const [query, setQuery] = useState("");
@@ -151,11 +174,17 @@ const Suppliers = () => {
                 <div className="w-full flex p-1 gap-1 items-center" key={i}>
                   <div className="w-3/12 flex items-center gap-2">
                     <div className="w-12 h-12 rounded-full overflow-hidden">
-                      <img
-                        src={u?.img || "https://via.placeholder.com/300.png/09f/fff"}
-                        alt=""
-                        className="w-full h-full object-cover rounded-md mx-auto"
-                      />
+                      {u?.img ? (
+                        <img
+                          src={u.img}
+                          alt={u.displayName || u.username || "Shop"}
+                          className="w-full h-full object-cover rounded-md mx-auto"
+                        />
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center text-white text-lg font-bold ${getAvatarColor(u.displayName || u.username || "Shop")}`}>
+                          {getAvatarText(u.displayName || u.username)}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div>{u.displayName || u.username}</div>

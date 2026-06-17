@@ -13,6 +13,29 @@ import { toast } from "react-toastify";
 import ktsRequest from "../../../ultis/ktsrequest";
 import { useDispatch, useSelector } from "react-redux";
 
+const avatarColors = [
+  "bg-orange-500",
+  "bg-emerald-500",
+  "bg-cyan-500",
+  "bg-fuchsia-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-lime-500",
+  "bg-amber-500",
+  "bg-rose-500",
+];
+
+const getAvatarColor = (seed = "") => {
+  if (!seed) return avatarColors[0];
+  const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return avatarColors[hash % avatarColors.length];
+};
+
+const getAvatarText = (text = "") => {
+  if (!text) return "S";
+  return text.trim().charAt(0).toUpperCase();
+};
+
 const Product = () => {
   const { products } = useSelector((state) => state.cart);
   const { currentUser } = useSelector((state) => state.user);
@@ -108,7 +131,7 @@ const Product = () => {
       currentPrice: product.currentPrice,
       shopID: product.shopID,
       shopName: product.shopName,
-      img: product.imgs[0],
+      img: product.imgs?.[0] || "",
       quantity,
     };
 
@@ -273,11 +296,21 @@ const Product = () => {
               <div className="flex md:w-1/2 w-full flex-col gap-3 border border-green-300 rounded-md p-3 bg-green-50">
                 <div className="flex items-center gap-3 rounded-md border border-green-200 bg-white/70 p-3">
                   <Link to={`/shop/${product.shopID || shopId}`} className="shrink-0">
-                    <img
-                      src={shop?.img || "https://via.placeholder.com/96.png?text=Shop"}
-                      alt={shop?.displayName || shop?.username || "Shop"}
-                      className="h-14 w-14 rounded-full object-cover border border-green-200"
-                    />
+                    {shop?.img ? (
+                      <img
+                        src={shop.img}
+                        alt={shop?.displayName || shop?.username || "Shop"}
+                        className="h-14 w-14 rounded-full object-cover border border-green-200"
+                      />
+                    ) : (
+                      <div
+                        className={`h-14 w-14 rounded-full flex items-center justify-center text-white text-xl font-bold border border-green-200 ${getAvatarColor(
+                          shop?.displayName || shop?.username || "Shop",
+                        )}`}
+                      >
+                        {getAvatarText(shop?.displayName || shop?.username || "Shop")}
+                      </div>
+                    )}
                   </Link>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs uppercase tracking-wide text-gray-500">

@@ -2,27 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginFailure, loginStart, loginSuccess } from "../../redux/userSlice";
-import { setMsg } from "../../redux/msgSlice";
 import ktsRequest from "../../../ultis/ktsrequest";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 
 const Login = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const { currentUser } = useSelector((state) => state.user);
-  const { currentMsg } = useSelector((state) => state.msg);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // useEffect(() => {
-  //   if (currentUser) return navigate("/dashboard");
-  //   if (currentMsg) {
-  //     toast.warn(currentMsg);
-  //     dispatch(setMsg(null));
-  //   }
-  //   <ToastContainer />;
-  // }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,6 +19,10 @@ const Login = () => {
         username: name,
         password,
       });
+      if(res.status !== 200) {
+        toast.error(res.data);
+        return dispatch(loginFailure());
+      }
       dispatch(loginSuccess(res.data));
       navigate(-1);
     } catch (err) {

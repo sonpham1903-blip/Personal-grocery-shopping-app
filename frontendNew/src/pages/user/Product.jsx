@@ -55,11 +55,11 @@ const Product = () => {
   const relatedDocs = Array.isArray(product?.relatedDocuments)
     ? product.relatedDocuments
     : typeof product?.relatedDocuments === "string"
-    ? product.relatedDocuments
-        .split(/\n|,/)
-        .map((doc) => doc.trim())
-        .filter(Boolean)
-    : [];
+      ? product.relatedDocuments
+          .split(/\n|,/)
+          .map((doc) => doc.trim())
+          .filter(Boolean)
+      : [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   useEffect(() => {
@@ -216,7 +216,7 @@ const Product = () => {
                       <button
                         onClick={() => {
                           setActiveImg((prev) =>
-                            prev === imgs.length - 1 ? 0 : prev + 1
+                            prev === imgs.length - 1 ? 0 : prev + 1,
                           );
                         }}
                         className="p-1 z-10 bg-green-500/30 rounded-full hover:bg-green-500 absolute top-[40%] right-0"
@@ -239,7 +239,7 @@ const Product = () => {
                       <button
                         onClick={() => {
                           setActiveImg((prev) =>
-                            prev === 0 ? imgs.length - 1 : prev - 1
+                            prev === 0 ? imgs.length - 1 : prev - 1,
                           );
                         }}
                         className="p-1 z-10  bg-green-500/30 rounded-full hover:bg-green-300 absolute top-[40%]"
@@ -295,7 +295,10 @@ const Product = () => {
               </div>
               <div className="flex md:w-1/2 w-full flex-col gap-3 border border-green-300 rounded-md p-3 bg-green-50">
                 <div className="flex items-center gap-3 rounded-md border border-green-200 bg-white/70 p-3">
-                  <Link to={`/shop/${product.shopID || shopId}`} className="shrink-0">
+                  <Link
+                    to={`/shop/${product.shopID || shopId}`}
+                    className="shrink-0"
+                  >
                     {shop?.img ? (
                       <img
                         src={shop.img}
@@ -308,7 +311,9 @@ const Product = () => {
                           shop?.displayName || shop?.username || "Shop",
                         )}`}
                       >
-                        {getAvatarText(shop?.displayName || shop?.username || "Shop")}
+                        {getAvatarText(
+                          shop?.displayName || shop?.username || "Shop",
+                        )}
                       </div>
                     )}
                   </Link>
@@ -320,7 +325,10 @@ const Product = () => {
                       to={`/shop/${product.shopID || shopId}`}
                       className="block truncate font-semibold text-gray-800 hover:text-primary"
                     >
-                      {shop?.displayName || shop?.username || product.shopName || "Shop"}
+                      {shop?.displayName ||
+                        shop?.username ||
+                        product.shopName ||
+                        "Shop"}
                     </Link>
                     <p className="text-sm text-gray-500 truncate">
                       {shop?.phone || ""}
@@ -334,8 +342,11 @@ const Product = () => {
                   const tags = Array.isArray(product?.tags)
                     ? product.tags
                     : typeof product?.tags === "string"
-                    ? product.tags.split(/,|\n|;/).map((t) => t.trim()).filter(Boolean)
-                    : [];
+                      ? product.tags
+                          .split(/,|\n|;/)
+                          .map((t) => t.trim())
+                          .filter(Boolean)
+                      : [];
 
                   return tags.length > 0 ? (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -432,29 +443,6 @@ const Product = () => {
                     <li>Hàng tươi mới mỗi ngày</li>
                   </ul>
                 </div> */}
-
-                <div className="bg-orange-100 rounded border border-dashed border-red-500 divide-y divide-dashed divide-red-500">
-                  <div className="flex gap-3 p-3 items-center">
-                    <img
-                      src="https://via.placeholder.com/32"
-                      className="w-8"
-                      alt=""
-                    />
-                    <h3 className="uppercase font-semibold">
-                      khuyến mãi trị giá{" "}
-                      <span className="font-bold">{vnd(200000)}</span>
-                    </h3>
-                  </div>
-                  <div className="p-3">
-                    <ul className="list-decimal ml-5 ">
-                      <li>
-                        Qùa tặng theo chương trình "Mua hàng ngay - Quà liền
-                        tay"{" "}
-                      </li>
-                      <li>Áp dụng tới khi hết quà tặng</li>
-                    </ul>
-                  </div>
-                </div>
                 <div className="flex my-5">
                   <span className="font-bold text-gray-700">Số lượng</span>
                   <div className="flex w-1/2 mx-auto gap-1">
@@ -495,7 +483,9 @@ const Product = () => {
                       className="bg-gray-300 px-2.5 hover:bg-gray-500 rounded"
                       disabled={remainingStock <= 0}
                       onClick={() =>
-                        setQuantity((prev) => Math.min(prev + 1, remainingStock))
+                        setQuantity((prev) =>
+                          Math.min(prev + 1, remainingStock),
+                        )
                       }
                     >
                       +
@@ -596,7 +586,7 @@ const Product = () => {
                   Mô tả
                 </a>
               </li>
-             
+
               <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
                 <a
                   className={
@@ -624,7 +614,9 @@ const Product = () => {
                   <div className={openTab === 1 ? "flex" : "hidden"} id="link1">
                     <div className="w-full space-y-4">
                       <p
-                        dangerouslySetInnerHTML={{ __html: product.description }}
+                        dangerouslySetInnerHTML={{
+                          __html: product.description,
+                        }}
                       ></p>
 
                       {(product?.isOcop || product?.ocopCertImage) && (
@@ -639,7 +631,9 @@ const Product = () => {
                           <div className="text-sm text-gray-700">
                             <span className="font-semibold">Ngày cấp: </span>
                             {product?.excutionDate
-                              ? new Date(product.excutionDate).toLocaleDateString()
+                              ? new Date(
+                                  product.excutionDate,
+                                ).toLocaleDateString()
                               : "-"}
                           </div>
                           {product?.ocopCertImage && (
@@ -680,7 +674,7 @@ const Product = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div
                     className={openTab === 3 ? "block" : "hidden"}
                     id="link3"

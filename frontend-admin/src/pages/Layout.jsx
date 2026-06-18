@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 const Layout = () => {
   const { currentUser } = useSelector((state) => state.user);
   const isAdmin = currentUser?.role === "admin";
-  
+
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
@@ -34,7 +34,7 @@ const Layout = () => {
       <Sidebar />
       <div className="bg-gray-200 flex-1 h-screen">
         <Header />
-        
+
         <div className="h-[88vh] overflow-auto">
           <Routes>
             <Route
@@ -62,14 +62,23 @@ const Layout = () => {
             />
             <Route
               path="loai-hang-hoa"
-              element={isAdmin ? <Categories /> : <Navigate to="/admin" replace />}
+              element={
+                isAdmin ? <Categories /> : <Navigate to="/admin" replace />
+              }
             />
             <Route
               path="nha-cung-cap"
-              element={isAdmin ? <Suppliers /> : <Navigate to="/admin" replace />}
+              element={
+                isAdmin ? <Suppliers /> : <Navigate to="/admin" replace />
+              }
             />
             <Route path="thong-tin-tai-khoan">
-              <Route index element={<Profile />} />
+              <Route
+                index
+                element={
+                  isAdmin ? <Navigate to="/admin" replace /> : <Profile />
+                }
+              />
               {/* <Route path=":userId" element={<EditUser />} /> */}
             </Route>
             <Route path="don-hang" element={<Orders />} />

@@ -42,7 +42,9 @@ const normalizeProductPayload = (payload = {}) => {
       .map((t) => String(t).trim())
       .filter(Boolean);
   } else if (Array.isArray(nextPayload.tags)) {
-    nextPayload.tags = nextPayload.tags.map((t) => String(t).trim()).filter(Boolean);
+    nextPayload.tags = nextPayload.tags
+      .map((t) => String(t).trim())
+      .filter(Boolean);
   } else {
     nextPayload.tags = [];
   }
@@ -55,7 +57,10 @@ const normalizeProductPayload = (payload = {}) => {
 
   // Ensure currentPrice exists and defaults to stockPrice
   const stock = Number(nextPayload.stockPrice ?? 0);
-  const cp = nextPayload.currentPrice !== undefined ? Number(nextPayload.currentPrice) : stock;
+  const cp =
+    nextPayload.currentPrice !== undefined
+      ? Number(nextPayload.currentPrice)
+      : stock;
   nextPayload.currentPrice = Number.isFinite(cp) && cp >= 0 ? cp : stock;
 
   return nextPayload;
@@ -108,9 +113,10 @@ export const activeProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const { search, limit } = req.query;
+    const { search, limit, ocop } = req.query;
 
     const searchTokens = getSearchTokens(search);
+    const filterOcop = normalizeBoolean(ocop);
 
     const products = await Product.find({ active: true });
     const matchedProducts =
@@ -123,7 +129,13 @@ export const getProducts = async (req, res, next) => {
           })
         : products;
 
-    const sellableProducts = matchedProducts.filter(isSellableProduct);
+    const ocopProducts = filterOcop
+      ? matchedProducts.filter((product) =>
+          Boolean(product.isOcop || product.ocopCertImage),
+        )
+      : matchedProducts;
+
+    const sellableProducts = ocopProducts.filter(isSellableProduct);
 
     const sortedProducts = sellableProducts.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
@@ -186,7 +198,8 @@ export const updateProduct = async (req, res, next) => {
     } else {
       const isAdmin = req.user?.role === "admin";
       const isShopOwner =
-        req.user?.role === "shop" && String(product.shopID) === String(req.user?.id);
+        req.user?.role === "shop" &&
+        String(product.shopID) === String(req.user?.id);
       const updateData = normalizeProductPayload(req.body);
       delete updateData.inStock;
 
@@ -217,7 +230,8 @@ export const deleteProduct = async (req, res, next) => {
     } else {
       const isAdmin = req.user?.role === "admin";
       const isShopOwner =
-        req.user?.role === "shop" && String(product.shopID) === String(req.user?.id);
+        req.user?.role === "shop" &&
+        String(product.shopID) === String(req.user?.id);
 
       if (isAdmin || isShopOwner) {
         await Product.findByIdAndDelete(req.params.id);
@@ -236,7 +250,9 @@ export const deleteProduct = async (req, res, next) => {
 export const getLastest = async (req, res, next) => {
   const limit = req.params.limit || 0;
   try {
-    const products = (await Product.find({ active: true })).filter(isSellableProduct);
+    const products = (await Product.find({ active: true })).filter(
+      isSellableProduct,
+    );
     const list =
       limit > 0
         ? products.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
@@ -249,7 +265,9 @@ export const getLastest = async (req, res, next) => {
 export const getHostest = async (req, res, next) => {
   const limit = req.params.limit || 0;
   try {
-    const products = (await Product.find({ active: true })).filter(isSellableProduct);
+    const products = (await Product.find({ active: true })).filter(
+      isSellableProduct,
+    );
     const list =
       limit > 0
         ? products.sort((a, b) => b.outStock - a.outStock).slice(0, limit)

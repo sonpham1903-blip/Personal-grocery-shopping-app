@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import ktsRequest from "../../ultis/ktsrequest";
 import axios from "axios";
+import { uploadSingleFile } from "../../ultis/handleFile";
 
 const VIETNAM_ADMIN_API = "https://provinces.open-api.vn/api";
 const USERNAME_REGEX = /^[\p{L}\p{M}0-9_ ]+$/u;
@@ -26,6 +27,7 @@ const Register = () => {
   const [wardFullName, setWardFullName] = useState("");
   const [address, setAddress] = useState("");
   const [businessLicensePdfUrl, setBusinessLicensePdfUrl] = useState("");
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const [check, setCheck] = useState(false);
   useEffect(() => {
     const getCities = async () => {
@@ -319,14 +321,33 @@ const Register = () => {
                 />
               </div>
               <div className="pr-2.5 pl-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Giấy chứng nhận kinh doanh (PDF)</label>
                 <input
-                  type="text"
-                  placeholder="Link PDF giấy chứng nhận đăng ký hộ kinh doanh ..."
-                  name="businessLicensePdfUrl"
-                  value={businessLicensePdfUrl}
-                  className="border-grey-light block w-full rounded border p-2 focus:border-primary focus:outline-none"
-                  onChange={(e) => setBusinessLicensePdfUrl(e.target.value)}
+                  type="file"
+                  accept="application/pdf"
+                  className="block w-full rounded border border-gray-300 bg-white p-2 text-sm text-gray-900"
+                  onChange={async (e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    try {
+                      setUploadingPdf(true);
+                      const url = await uploadSingleFile(file, `users/${username || 'new'}`);
+                      setBusinessLicensePdfUrl(url);
+                      toast.success("Tải PDF lên cloud thành công");
+                    } catch (err) {
+                      toast.error(err.message || "Tải PDF thất bại");
+                    } finally {
+                      setUploadingPdf(false);
+                    }
+                  }}
                 />
+                {uploadingPdf ? (
+                  <div className="text-xs text-gray-500 mt-1">Đang tải lên...</div>
+                ) : businessLicensePdfUrl ? (
+                  <div className="text-xs break-all mt-1">
+                    <a href={businessLicensePdfUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Xem file đã tải lên</a>
+                  </div>
+                ) : null}
               </div>
               <div className="flex px-3 gap-2">
                 <input

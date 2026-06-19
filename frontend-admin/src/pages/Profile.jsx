@@ -38,6 +38,7 @@ const Profile = () => {
   const [inputs, setInputs] = useState({});
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -63,6 +64,21 @@ const Profile = () => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       uploadImage(selectedFile);
+    }
+  };
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingPdf(true);
+      const downloadURL = await uploadSingleFile(file, `users/${currentUser._id}/business_license`);
+      setInputs((prev) => ({ ...prev, businessLicensePdfUrl: downloadURL }));
+      toast.success("Tải PDF lên thành công");
+    } catch (error) {
+      toast.error(error.message || "Tải PDF thất bại");
+    } finally {
+      setUploadingPdf(false);
     }
   };
 
@@ -316,6 +332,22 @@ const Profile = () => {
                       placeholder="Số nhà, tên đường..."
                       className="w-full rounded-lg border border-gray-300 px-4 py-2 disabled:bg-gray-50 focus:ring-primary focus:border-primary transition-all"
                     />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-sm font-medium text-gray-600">Giấy chứng nhận kinh doanh (PDF)</span>
+                    {inputs?.businessLicensePdfUrl ? (
+                      <div className="text-xs mb-1 break-all">
+                        <a href={inputs.businessLicensePdfUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Xem file hiện tại</a>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-500 mb-1">Chưa có file</div>
+                    )}
+                    {isEditing && (
+                      <div className="flex items-center gap-2">
+                        <input type="file" accept="application/pdf" onChange={handlePdfUpload} />
+                        {uploadingPdf && <span className="text-sm text-gray-500">Đang tải...</span>}
+                      </div>
+                    )}
                   </label>
                 </div>
               </div>

@@ -14,6 +14,15 @@ const products = () => {
   const filterOcop = ["1", "true"].includes(
     (searchParams.get("ocop") || "").toLowerCase(),
   );
+  const category = (searchParams.get("cat") || "").trim();
+  const [categories, setCategories] = useState([]);
+  const minPrice = searchParams.get("minPrice") || "";
+  const maxPrice = searchParams.get("maxPrice") || "";
+  
+  const filterAvailable = ["1", "true"].includes(
+    (searchParams.get("available") || "").toLowerCase(),
+  );
+  const sort = searchParams.get("sort") || "newest";
 
   useEffect(() => {
     setLoading(true);
@@ -22,10 +31,13 @@ const products = () => {
         const params = [];
         if (query) params.push(`search=${encodeURIComponent(query)}`);
         if (filterOcop) params.push("ocop=1");
+        if (category) params.push(`cat=${encodeURIComponent(category)}`);
+        if (minPrice) params.push(`minPrice=${encodeURIComponent(minPrice)}`);
+        if (maxPrice) params.push(`maxPrice=${encodeURIComponent(maxPrice)}`);
+        if (filterAvailable) params.push("available=1");
+        if (sort) params.push(`sort=${encodeURIComponent(sort)}`);
 
-        const url = params.length
-          ? `/products?${params.join("&")}`
-          : "/products";
+        const url = params.length ? `/products?${params.join("&")}` : "/products";
         const res = await ktsRequest.get(url);
         setData(res.data);
         setLoading(false);
@@ -37,7 +49,19 @@ const products = () => {
       }
     };
     fetchData();
-  }, [query, filterOcop]);
+  }, [query, filterOcop, category, minPrice, maxPrice, filterAvailable, sort]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await ktsRequest.get("/categories");
+        setCategories(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        // ignore silently
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleOcopChange = (event) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -70,6 +94,80 @@ const products = () => {
             >
               Chỉ hiển thị sản phẩm OCOP
             </label>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={category}
+              onChange={(e) => {
+                const nextParams = new URLSearchParams(searchParams);
+                if (e.target.value) nextParams.set("cat", e.target.value);
+                else nextParams.delete("cat");
+                setSearchParams(nextParams);
+              }}
+              className="text-sm border rounded px-2 py-1"
+            >
+              <option value="">Tất cả danh mục</option>
+              {categories.map((c) => (
+                <option key={c._id || c.code || c.name} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              placeholder="Giá từ"
+              value={minPrice}
+              onChange={(e) => {
+                const nextParams = new URLSearchParams(searchParams);
+                if (e.target.value) nextParams.set("minPrice", e.target.value);
+                else nextParams.delete("minPrice");
+                setSearchParams(nextParams);
+              }}
+              className="text-sm border rounded px-2 py-1 w-24"
+            />
+            <input
+              type="number"
+              placeholder="Đến"
+              value={maxPrice}
+              onChange={(e) => {
+                const nextParams = new URLSearchParams(searchParams);
+                if (e.target.value) nextParams.set("maxPrice", e.target.value);
+                else nextParams.delete("maxPrice");
+                setSearchParams(nextParams);
+              }}
+              className="text-sm border rounded px-2 py-1 w-24"
+            />
+            
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={filterAvailable}
+                onChange={(e) => {
+                  const nextParams = new URLSearchParams(searchParams);
+                  if (e.target.checked) nextParams.set("available", "1");
+                  else nextParams.delete("available");
+                  setSearchParams(nextParams);
+                }}
+                className="h-4 w-4"
+              />
+              Còn hàng
+            </label>
+            <select
+              value={sort}
+              onChange={(e) => {
+                const nextParams = new URLSearchParams(searchParams);
+                if (e.target.value && e.target.value !== "newest") nextParams.set("sort", e.target.value);
+                else nextParams.delete("sort");
+                setSearchParams(nextParams);
+              }}
+              className="text-sm border rounded px-2 py-1"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="priceAsc">Giá tăng dần</option>
+              <option value="priceDesc">Giá giảm dần</option>
+              <option value="hot">Bán chạy</option>
+            </select>
           </div>
           {filterOcop && (
             <button

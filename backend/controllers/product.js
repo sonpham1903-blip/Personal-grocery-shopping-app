@@ -113,22 +113,71 @@ export const activeProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const { search, limit, ocop } = req.query;
+    const {
+      search,
+      limit,
+      ocop,
+      minPrice,
+      maxPrice,
+      cat,
+      tags,
+      available,
+      sort,
+    } = req.query;
 
     const searchTokens = getSearchTokens(search);
     const filterOcop = normalizeBoolean(ocop);
+    const filterAvailable = normalizeBoolean(available);
 
-    const products = await Product.find({ active: true });
+    // Build initial mongo query to reduce result set
+    const mongoQuery = { active: true };
+
+    if (filterOcop) {
+      mongoQuery.$or = [
+        { isOcop: true },
+        { ocopCertImage: { $exists: true, $ne: "" } },
+      ];
+    }
+
+    if (cat) mongoQuery.cat = String(cat);
+
+    const min = Number(minPrice ?? NaN);
+    const max = Number(maxPrice ?? NaN);
+    if (Number.isFinite(min) || Number.isFinite(max)) {
+      mongoQuery.currentPrice = {};
+      if (Number.isFinite(min)) mongoQuery.currentPrice.$gte = min;
+      if (Number.isFinite(max)) mongoQuery.currentPrice.$lte = max;
+    }
+
+    if (tags) {
+      const tagsArray = String(tags)
+        .split(/,|;|\s+/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+      if (tagsArray.length > 0) mongoQuery.tags = { $in: tagsArray };
+    }
+
+    if (filterAvailable) {
+      mongoQuery.available = true;
+      mongoQuery.inStock = { $gt: 0 };
+    }
+
+    const products = await Product.find(mongoQuery);
+
+    // Apply text search token matching (diacritics-insensitive) in-memory
     const matchedProducts =
       searchTokens.length > 0
         ? products.filter((product) => {
             return (
               matchesSearchTokens(product.productName, searchTokens) ||
-              matchesSearchTokens(product.cat, searchTokens)
+              matchesSearchTokens(product.cat, searchTokens) ||
+              (Array.isArray(product.tags) &&
+                product.tags.some((t) => matchesSearchTokens(t, searchTokens)))
             );
           })
         : products;
 
+    // Ensure OCOP presence if requested (in case some documents passed earlier match differently)
     const ocopProducts = filterOcop
       ? matchedProducts.filter((product) =>
           Boolean(product.isOcop || product.ocopCertImage),
@@ -137,9 +186,18 @@ export const getProducts = async (req, res, next) => {
 
     const sellableProducts = ocopProducts.filter(isSellableProduct);
 
-    const sortedProducts = sellableProducts.sort(
+    // Sorting
+    let sortedProducts = sellableProducts.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
+
+    if (sort === "priceAsc") {
+      sortedProducts = sellableProducts.sort((a, b) => a.currentPrice - b.currentPrice);
+    } else if (sort === "priceDesc") {
+      sortedProducts = sellableProducts.sort((a, b) => b.currentPrice - a.currentPrice);
+    } else if (sort === "hot") {
+      sortedProducts = sellableProducts.sort((a, b) => (b.outStock || 0) - (a.outStock || 0));
+    }
 
     const limitNumber = Number(limit);
     const result =

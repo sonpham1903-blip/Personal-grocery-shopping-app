@@ -17,6 +17,8 @@ const shippingOptions = [
   { value: "ems", label: "EMS VIETNAM (Chuyển phát nhanh)" },
   { value: "vnpost", label: "VIETNAM POST (Bưu điện)" },
   { value: "best", label: "BEST EXPRESS" },
+  { value: "be", label: "BE (Giao trong ngày - tươi sống)" },
+  { value: "grab", label: "GRAB (Giao trong ngày - tức thời)" },
 ];
 
 const Cart = () => {

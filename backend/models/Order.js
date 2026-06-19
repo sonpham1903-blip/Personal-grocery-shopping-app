@@ -153,7 +153,7 @@ const OrderSchema = new mongoose.Schema(
     shipMode: {
       type: String,
       default: "ems",
-      enum: ["ems", "vnpost", "best"],
+      enum: ["ems", "vnpost", "best", "be", "grab"],
     },
     payment: {
       type: String,

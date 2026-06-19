@@ -32,6 +32,23 @@ const getTrackingDescByStatus = (status) => {
   }
 };
 
+const getCarrierNameFromMode = (mode) => {
+  switch (mode) {
+    case "ems":
+      return "EMS VIETNAM";
+    case "vnpost":
+      return "VIETNAM POST";
+    case "best":
+      return "BEST EXPRESS";
+    case "be":
+      return "BE";
+    case "grab":
+      return "GRAB";
+    default:
+      return "";
+  }
+};
+
 export const createOrder = async (req, res, next) => {
   try {
     console.log("[orders:create] incoming request", {
@@ -128,40 +145,62 @@ export const createOrder = async (req, res, next) => {
       total += lineTotal;
     }
 
-    const orderNumber = String(Date.now());
-    const newOrder = new Order({
-      buyerId: req.user.id,
-      buyerName,
-      buyerPhone,
-      toCity,
-      toDistrict,
-      toWard,
-      toAddress,
-      note: req.body.note || "",
-      shipMode: ["ems", "vnpost", "best"].includes(req.body.shipMode)
-        ? req.body.shipMode
-        : "ems",
-      payment: req.body.payment === "bank" ? "bank" : "cod",
-      total,
-      products: normalizedProducts,
-      orderNumber,
-      tracking: [
-        {
-          status: ORDER_STATUS.PENDING_CONFIRMATION,
-          desc: getTrackingDescByStatus(ORDER_STATUS.PENDING_CONFIRMATION),
-          time: new Date(),
-        },
-      ],
-    });
+    // Split products by shop so each shop receives its own order
+    const productsByShop = normalizedProducts.reduce((acc, p) => {
+      const key = p.shopID || "unknown";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(p);
+      return acc;
+    }, {});
 
-    await newOrder.save();
+    const createdOrders = [];
+    let idx = 0;
+    for (const [shopID, productsForShop] of Object.entries(productsByShop)) {
+      const shopTotal = productsForShop.reduce(
+        (s, it) => s + (it.lineTotal || it.currentPrice * it.quantity || 0),
+        0
+      );
+      const orderNumber = `${Date.now()}-${idx++}`;
+      const selectedShipMode = req.body.shipMode;
+      const carrierFromBuyer = getCarrierNameFromMode(selectedShipMode);
 
-    console.log("[orders:create] order draft saved", {
-      orderId: newOrder._id.toString(),
-      orderNumber,
-      products: normalizedProducts.length,
-      total,
-    });
+      const orderDoc = new Order({
+        buyerId: req.user.id,
+        buyerName,
+        buyerPhone,
+        toCity,
+        toDistrict,
+        toWard,
+        toAddress,
+        note: req.body.note || "",
+        shipMode: ["ems", "vnpost", "best"].includes(req.body.shipMode)
+          ? req.body.shipMode
+          : "ems",
+        shippingInfo: carrierFromBuyer ? { carrierName: carrierFromBuyer } : {},
+        payment: req.body.payment === "bank" ? "bank" : "cod",
+        total: shopTotal,
+        products: productsForShop,
+        orderNumber,
+        tracking: [
+          {
+            status: ORDER_STATUS.PENDING_CONFIRMATION,
+            desc: getTrackingDescByStatus(ORDER_STATUS.PENDING_CONFIRMATION),
+            time: new Date(),
+          },
+        ],
+      });
+
+      await orderDoc.save();
+      createdOrders.push({ orderId: orderDoc._id.toString(), orderNumber, shopID });
+
+      console.log("[orders:create] order draft saved", {
+        orderId: orderDoc._id.toString(),
+        orderNumber,
+        products: productsForShop.length,
+        total: shopTotal,
+        shopID,
+      });
+    }
 
     try {
       await Promise.all(
@@ -192,14 +231,15 @@ export const createOrder = async (req, res, next) => {
       throw stockError;
     }
 
-    console.log("[orders:create] order completed successfully", {
-      orderNumber,
-      orderId: newOrder._id.toString(),
+    console.log("[orders:create] order(s) completed successfully", {
+      count: createdOrders.length,
+      orders: createdOrders,
     });
 
-    res
-      .status(200)
-      .json({ message: "Tạo đơn hàng thành công", data: orderNumber });
+    res.status(200).json({
+      message: "Tạo đơn hàng thành công",
+      data: createdOrders.map((o) => o.orderNumber),
+    });
   } catch (error) {
     console.error("[orders:create] failed", {
       message: error?.message,
@@ -438,15 +478,18 @@ export const handover = async (req, res, next) => {
         .json("Chỉ có thể bàn giao vận chuyển khi đơn đang chuẩn bị hàng");
     }
 
-    const carrierName = String(req.body.carrierName || "").trim();
+    const carrierNameBody = String(req.body.carrierName || "").trim();
     const trackingCode = String(req.body.trackingCode || "").trim();
     const shippingOrderCode = String(req.body.shippingOrderCode || "").trim();
     const shippingNote = String(req.body.note || "").trim();
 
-    if (!carrierName || !trackingCode) {
-      return res
-        .status(400)
-        .json("Vui lòng nhập đơn vị vận chuyển và mã vận đơn");
+    if (!trackingCode) {
+      return res.status(400).json("Vui lòng nhập mã vận đơn");
+    }
+
+    const finalCarrierName = carrierNameBody || order.shippingInfo?.carrierName || "";
+    if (!finalCarrierName) {
+      return res.status(400).json("Vui lòng nhập đơn vị vận chuyển");
     }
 
     await Order.findByIdAndUpdate(
@@ -455,7 +498,7 @@ export const handover = async (req, res, next) => {
         $set: {
           status: ORDER_STATUS.SHIPPING,
           shippingInfo: {
-            carrierName,
+            carrierName: finalCarrierName,
             trackingCode,
             shippingOrderCode,
             note: shippingNote,
@@ -465,7 +508,7 @@ export const handover = async (req, res, next) => {
         $push: {
           tracking: {
             status: ORDER_STATUS.SHIPPING,
-            desc: `${getTrackingDescByStatus(ORDER_STATUS.SHIPPING)} (${carrierName} - ${trackingCode})`,
+            desc: `${getTrackingDescByStatus(ORDER_STATUS.SHIPPING)} (${finalCarrierName} - ${trackingCode})`,
             time: new Date(),
           },
         },

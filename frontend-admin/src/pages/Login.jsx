@@ -16,7 +16,7 @@ const Login = () => {
   useEffect(() => {
     if (currentUser) {
       const adminLanding = currentUser?.role === "admin" ? "/admin/san-pham" : "/admin";
-      toast.success(`Chào sếp ${currentUser?.displayName}`, {
+      toast.success(`Chào sếp admin!`, {
         position: "top-center",
       });
       return navigate(adminLanding, { replace: true });

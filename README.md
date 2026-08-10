@@ -34,11 +34,15 @@ Dự án **Hệ thống Đi chợ hộ & Phân phối sản phẩm OCOP Hải Ph
    * **Styling:** Tailwind CSS (v4)
    * **State Management:** Redux Toolkit
    * **Thư viện chính:** React Router DOM (v7), Axios, Swiper, React Toastify, Socket.io Client.
+   * **Minh họa giao diện:**
+     ![Giao diện Khách hàng](assets/customer_ui.jpg)
 2. **Giao diện Quản trị & Người bán (`/frontend-admin`):**
    * **Core:** React (v18) & Vite (v4)
    * **Styling:** Tailwind CSS (v3)
    * **State Management:** Redux Toolkit & Redux Persist
    * **Thư viện chính:** Recharts (Báo cáo thống kê), React Quill (Soạn bài viết tin tức), Socket.io Client.
+   * **Minh họa giao diện:**
+     ![Giao diện Quản trị & Người bán](assets/admin_ui.jpg)
 
 ---
 
